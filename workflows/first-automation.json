@@ -1,0 +1,172 @@
+{
+  "updatedAt": "2025-06-06T21:41:23.000Z",
+  "createdAt": "2025-05-28T11:00:44.401Z",
+  "id": "tjDB6v81o7iyPv2U",
+  "name": "first_automation",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Room",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "What your name?",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Chose your room",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Suite"
+                  },
+                  {
+                    "option": "Deluxe"
+                  },
+                  {
+                    "option": "Special"
+                  }
+                ]
+              },
+              "multiselect": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        360,
+        160
+      ],
+      "id": "3d49947a-0f82-41b0-a34d-92d268e3223d",
+      "name": "On form submission",
+      "webhookId": "a7dd8406-efa6-4914-9d89-4227dc1652fd"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appwoQv3udO9kbIgx",
+          "mode": "list",
+          "cachedResultName": "Base",
+          "cachedResultUrl": "https://airtable.com/appwoQv3udO9kbIgx"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblDdvXV5tE2GbtyN",
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://airtable.com/appwoQv3udO9kbIgx/tblDdvXV5tE2GbtyN"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Room": "={{ $json['Chose your room'][0] }}",
+            "Name": "={{ $json['What your name?'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Room",
+              "displayName": "Room",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        600,
+        160
+      ],
+      "id": "a4c5f015-a91f-4be9-8e38-38ab2958e32e",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "WaZ2pTjNm00qBUbj",
+          "name": "Airtable Personal Access Token account 3"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "8beb23ee-5bc3-4f2a-9814-34a5cfde06f8",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-05-28T11:00:44.407Z",
+      "createdAt": "2025-05-28T11:00:44.407Z",
+      "role": "workflow:owner",
+      "workflowId": "tjDB6v81o7iyPv2U",
+      "projectId": "JQyTTjJMNM8n2QpU",
+      "project": {
+        "updatedAt": "2025-05-28T10:59:42.882Z",
+        "createdAt": "2025-05-28T10:53:01.795Z",
+        "id": "JQyTTjJMNM8n2QpU",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "030dd5bf-9c48-4b90-8af9-957c3e0050d4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

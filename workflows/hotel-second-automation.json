@@ -1,0 +1,48 @@
+{
+  "updatedAt": "2025-06-06T21:41:26.000Z",
+  "createdAt": "2025-05-28T12:08:05.974Z",
+  "id": "scGd1ezipNgShwFF",
+  "name": "hotel_second_automation",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "654d52c5-95c7-48ea-ad71-dbbe59af8bf8",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-05-28T12:08:05.988Z",
+      "createdAt": "2025-05-28T12:08:05.988Z",
+      "role": "workflow:owner",
+      "workflowId": "scGd1ezipNgShwFF",
+      "projectId": "JQyTTjJMNM8n2QpU",
+      "project": {
+        "updatedAt": "2025-05-28T10:59:42.882Z",
+        "createdAt": "2025-05-28T10:53:01.795Z",
+        "id": "JQyTTjJMNM8n2QpU",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "030dd5bf-9c48-4b90-8af9-957c3e0050d4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "updatedAt": "2025-06-20T12:59:43.000Z",
+  "createdAt": "2025-06-06T21:47:39.806Z",
+  "id": "2KlE5Ez2EBHtbqVU",
+  "name": "Write and Read Files",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        -40
+      ],
+      "id": "f0908c3e-8b5c-48f6-9a47-513c8e791fee",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appwoQv3udO9kbIgx",
+          "mode": "list",
+          "cachedResultName": "Base",
+          "cachedResultUrl": "https://airtable.com/appwoQv3udO9kbIgx"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblDdvXV5tE2GbtyN",
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://airtable.com/appwoQv3udO9kbIgx/tblDdvXV5tE2GbtyN"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        60,
+        -40
+      ],
+      "id": "2c1f11ff-4f5d-491c-891f-f22d11b744d1",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "DnBGjEClDyb4cint",
+          "name": "Airtable Personal Access Token account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/Volumes/SSD/documents/n8n_rooms.txt",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        500,
+        -40
+      ],
+      "id": "b79627e9-246d-4be9-969b-bd553c39c6b0",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "Room",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        -40
+      ],
+      "id": "31395077-9689-462b-86f1-4c4e4976234c",
+      "name": "Convert to File"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "293bc2b5-8fe6-421a-bace-1211c522acef",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-06-06T21:47:39.815Z",
+      "createdAt": "2025-06-06T21:47:39.815Z",
+      "role": "workflow:owner",
+      "workflowId": "2KlE5Ez2EBHtbqVU",
+      "projectId": "JQyTTjJMNM8n2QpU",
+      "project": {
+        "updatedAt": "2025-05-28T10:59:42.882Z",
+        "createdAt": "2025-05-28T10:53:01.795Z",
+        "id": "JQyTTjJMNM8n2QpU",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "030dd5bf-9c48-4b90-8af9-957c3e0050d4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

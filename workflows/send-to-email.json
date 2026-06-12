@@ -1,0 +1,171 @@
+{
+  "updatedAt": "2026-06-08T13:55:11.000Z",
+  "createdAt": "2025-06-20T13:00:04.851Z",
+  "id": "0RlQaorC2Nc9Vhvc",
+  "name": "Send To email",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "authentication": "airtableTokenApi",
+        "baseId": {
+          "__rl": true,
+          "value": "https://airtable.com/appwoQv3udO9kbIgx/tblR9vCcVLz5nwrFq/viwhslLOzXk2DMNrx?blocks=hide",
+          "mode": "url"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "https://airtable.com/appwoQv3udO9kbIgx/tblR9vCcVLz5nwrFq/viwhslLOzXk2DMNrx?blocks=hide",
+          "mode": "url"
+        },
+        "triggerField": "ID",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "95ef5d08-d5d7-4fac-9681-0f921989e1dd",
+      "name": "Airtable Trigger",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "DnBGjEClDyb4cint",
+          "name": "Airtable Personal Access Token account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "=openai/gpt-oss-120b",
+          "mode": "id"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are responsible for customer order. Your task is to collect incoming information about new orders and create a clear summary that will sent via email to the team.\nThe email should be signed with \"Customer Success Team\".\nMake a clean body with new lines if needed.\n\nHere are the detalils of the customer orders:\n\nOrder number:{{ $json.fields.Order }}\nCustomer:{{ $json.fields.Name }}\nProduct:{{ $json.fields.Product }}\nQuantity:{{ $json.fields.Quantity }}\nPrice:{{ $json.fields.Price }}\nDate:{{ $json.fields.Date }}\nStatus:{{ $json.fields.Status }}\n\n\nPlease provide the following output parameters:\n\nemail_subject\nemail_content"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        240,
+        0
+      ],
+      "id": "cd1cc113-7aa8-4ac5-bee9-89747da15d23",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "n7iFTiVV0J9Rp8GI",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "kenjimaedafamily@gmail.com",
+        "subject": "={{ $json.message.content.email_subject }}",
+        "emailType": "text",
+        "message": "={{ $json.message.content.email_content }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Kenji"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        0
+      ],
+      "id": "406159c4-4da9-4f1e-9196-876d2c71e2f8",
+      "name": "Gmail",
+      "webhookId": "f6dd1797-a379-4349-be96-fc9fa8237a58",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4qB2EI2jjO7Hsfvl",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Airtable Trigger": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "d22d5fb7-1329-40e6-8596-7c872dbac71e",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-06-20T13:00:04.867Z",
+      "createdAt": "2025-06-20T13:00:04.867Z",
+      "role": "workflow:owner",
+      "workflowId": "0RlQaorC2Nc9Vhvc",
+      "projectId": "JQyTTjJMNM8n2QpU",
+      "project": {
+        "updatedAt": "2025-05-28T10:59:42.882Z",
+        "createdAt": "2025-05-28T10:53:01.795Z",
+        "id": "JQyTTjJMNM8n2QpU",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "030dd5bf-9c48-4b90-8af9-957c3e0050d4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}
