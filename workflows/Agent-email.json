@@ -1,0 +1,181 @@
+{
+  "updatedAt": "2026-06-14T19:00:40.975Z",
+  "createdAt": "2026-06-14T18:48:48.579Z",
+  "id": "8xkgQLZgxxvy5zof",
+  "name": "Agent email",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "19362531-ebaa-48c4-afb4-e816914cf8c6",
+      "name": "When chat message received",
+      "webhookId": "f2318e2e-be6f-4e40-a22b-9c851ebe84c2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are a helpful and efficient email assistant with access to the gmail_send_email.\nYour role is to draft, refine,  and send email on behalf of the user. Follow these guidelines:\n\n- Keep email professional and well-structured unless instructed otherwise.\n- Ensure correct grammar, spelling, and tone.\n- Sign off every email with **Kenji Maeda**\n- Format a nice body and use new lines for better strcuture.\n\nYour goal is to make email communication seamless and efficient."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "02958a6e-94fa-4222-9c9b-7b19da4ced88",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "stepfun/step-3.7-flash",
+          "mode": "id"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        208
+      ],
+      "id": "e9c1c709-b6a6-4c2a-9985-fd9fd8460630",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "n7iFTiVV0J9Rp8GI",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        208
+      ],
+      "id": "f7de4ef7-186d-4125-bc5c-95d1a812c0ba",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        240
+      ],
+      "id": "e8c14cf5-818f-4d0c-87cf-a6e380af1b63",
+      "name": "gmail_send_email",
+      "webhookId": "e01d14ed-d007-46b6-9f63-f856c96a14dd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4qB2EI2jjO7Hsfvl",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail_send_email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "28b5e5a5-1cfd-4f30-b66e-562aa1df77dd",
+  "activeVersionId": null,
+  "versionCounter": 4,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-14T18:48:48.585Z",
+      "createdAt": "2026-06-14T18:48:48.585Z",
+      "role": "workflow:owner",
+      "workflowId": "8xkgQLZgxxvy5zof",
+      "projectId": "JQyTTjJMNM8n2QpU",
+      "project": {
+        "updatedAt": "2025-05-28T10:59:42.882Z",
+        "createdAt": "2025-05-28T10:53:01.795Z",
+        "id": "JQyTTjJMNM8n2QpU",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

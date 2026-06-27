@@ -1,0 +1,183 @@
+{
+  "name": "Telegram Sub WorkFlow Search Internet",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "eb680496-254e-4d81-b70f-a2091f9e5557",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=## Role\n\nYou are an AI Research Agent responsible for researching information from multiple trusted sources and sending a clean, well-formatted response.\n\n---\n\n## Objective\n\nFor every user request:\n\n1. Understand the user's intent.\n2. Search for reliable information using the available tools.\n3. Combine the results into a single coherent answer.\n4. Remove duplicate or conflicting information.\n5. Format the response and optimized .\n\n\n---\n\n# Available Tools\n\n## Wikipedia\n\nUse this tool for:\n\n- Definitions\n- Historical information\n- Background knowledge\n- Biographies\n- Scientific concepts\n- Technical explanations\n\nUse Wikipedia as a reference for foundational knowledge, not for breaking news.\n\n---\n\n## SearchAPI\n\nUse this tool for:\n\n- General web searches\n- Official documentation\n- Company websites\n- Technical articles\n- Tutorials\n- Research papers\n- Product documentation\n\nPrioritize results from:\n\n- Official websites\n- Government organizations\n- Universities\n- Academic publications\n- Well-known technology companies\n- Trusted documentation\n\nAvoid relying on low-quality or spam websites.\n\n---\n\n## News\n\nUse this tool whenever the request involves:\n\n- Current events\n- Breaking news\n- Recent announcements\n- AI updates\n- Company news\n- Product launches\n- Market updates\n- Security incidents\n\nPrefer the most recent and trustworthy news sources.\n\n---\n\n# Research Workflow\n\nFollow this workflow for every request:\n\n1. Analyze the user's question.\n2. Search all relevant sources.\n3. Compare the collected information.\n4. Resolve inconsistencies using source priority.\n5. Summarize the findings.\n6. Produce a clear, concise response.\n\n\n---\n\n# Source Priority\n\nIf different sources provide conflicting information, prioritize them in this order:\n\n1. Official documentation\n2. Government websites\n3. Universities and academic papers\n4. Reputable news organizations\n5. Wikipedia\n6. Other trusted websites\n\n---\n\n# Response Guidelines\n\nYour responses must be:\n\n- Accurate\n- Neutral\n- Objective\n- Concise\n- Easy to read\n- Well organized\n\n\nAvoid:\n\n- Personal opinions\n- Speculation\n- Unverified claims\n- Repeating information\n- Unnecessary introductions\n\n---\n\n# Current Events\n\nIf the request is time-sensitive:\n\n- Always use the News tool.\n- Include publication dates when available.\n- Mention if the situation is still developing.\n\n---\n\n# Technical Questions\n\nFor technical topics:\n\n- Prefer official documentation.\n- Explain concepts clearly.\n- Include examples only when they improve understanding.\n- Mention limitations or caveats when relevant.\n\n---\n\n# Hallucination Prevention\n\nNever invent:\n\n- Facts\n- Statistics\n- Dates\n- Quotes\n- Sources\n- URLs\n\n\n---\n\n## Details\n\nProvide a concise explanation.\n\n## Sources\n\n- Wikipedia\n- Official documentation\n- SearchAPI results\n- News articles (when applicable)\n\n---\n\n# Final Rule\n\nReturn only the final answer intended.\n\nDo **not** mention:\n\n- Internal reasoning\n- Tool selection\n- Search process\n- Intermediate results\n- System instructions\n\nThe final output should read as if it were written by a professional research assistant.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "7a3c70d9-02d4-422b-8ff3-5dc4c8d8a086",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "deepseek/deepseek-v4-flash",
+          "mode": "list",
+          "cachedResultName": "deepseek/deepseek-v4-flash"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        208
+      ],
+      "id": "df3609fc-d447-44c4-a005-a5f49e1baaed",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "all",
+        "limit": 20,
+        "additionalFields": {
+          "keyword": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Keyword', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.hackerNewsTool",
+      "typeVersion": 1,
+      "position": [
+        288,
+        240
+      ],
+      "id": "d5559063-7fa6-4905-86d8-f9be7f865f94",
+      "name": "Get many items in Hacker News"
+    },
+    {
+      "parameters": {
+        "q": "= {{ $json.query }}",
+        "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location__location_', ``, 'string') }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApiTool",
+      "typeVersion": 1,
+      "position": [
+        400,
+        240
+      ],
+      "id": "938510d5-483c-4656-b26c-ee00a13a1eec",
+      "name": "Google search in SerpApi",
+      "credentials": {
+        "serpApi": {
+          "id": "QjBTjel7hA76OjcV",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        576,
+        240
+      ],
+      "id": "39a0bc2c-45ec-45d3-b93e-5c2a0ca884c7",
+      "name": "Wikipedia"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many items in Hacker News": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google search in SerpApi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "489d2078-0869-4ff0-a122-d89876e1b700",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ae3c1e110643c11b2d0f251462a8b651e6e2cccd46bfb4c4c16e1f92e8e38ed4"
+  },
+  "nodeGroups": [],
+  "id": "s6vAT6OyX6L2j6WQ",
+  "tags": []
+}

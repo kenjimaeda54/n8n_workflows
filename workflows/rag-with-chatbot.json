@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-11T19:16:29.000Z",
+  "updatedAt": "2026-06-14T12:25:24.193Z",
   "createdAt": "2026-06-11T18:45:11.948Z",
   "id": "N44MuUiwwogkwDoa",
   "name": "Rag with chatbot",
@@ -23,21 +23,6 @@
     },
     {
       "parameters": {
-        "options": {
-          "systemMessage": "=You are an AI assistant specialized in analyzing Tesla's quarterly financial reports.\nYour primary task is to answer questions accurately and precisely using the vector database, which contains relevants documents (Q3 and Q4 resports)\n\nOnly provide information that you retrive from documents (or verfied experto knowledge). If something is not included in the dataset or is unclear, clearly state that you do not have sufficient information\n\nStructure of your response:\n. Concise and to the point\n. Specific numbers and facts,when available\n. Clearly indicate wich quarterly report (Q3 or Q4) the information comes from\n\nObjective:\nProvide users with reliable and quick insights into Tesla's quarterly financials withou unnecessary details."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2,
-      "position": [
-        220,
-        0
-      ],
-      "id": "6a965dd5-0108-4332-880c-857e83bf5194",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
         "model": {
           "__rl": true,
           "value": "openai/gpt-oss-120b",
@@ -48,8 +33,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        60,
-        260
+        64,
+        272
       ],
       "id": "6af2926d-ec38-4718-a528-9374e374b884",
       "name": "OpenAI Chat Model",
@@ -67,11 +52,42 @@
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        200,
-        260
+        208,
+        272
       ],
       "id": "ea6b0f00-f34d-4e70-9f90-58ac9ccf47de",
       "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": "=openai/text-embedding-3-small",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        656
+      ],
+      "id": "bdad371b-7955-4ba9-bd6e-ec9d36f41f03",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "n7iFTiVV0J9Rp8GI",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        800,
+        192
+      ],
+      "id": "e070e191-3348-4e6d-a531-0a43b980b952",
+      "name": "Calculator"
     },
     {
       "parameters": {
@@ -86,37 +102,17 @@
         }
       },
       "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
-      "typeVersion": 1.1,
+      "typeVersion": 1.3,
       "position": [
-        280,
-        440
+        304,
+        496
       ],
-      "id": "7869a698-3fa2-4c53-8372-deb6a13b86cd",
-      "name": "Pinecone Vector Store",
+      "id": "c368b5cc-9b79-4562-8062-860e58ec5f59",
+      "name": "Pinecone Vector Store1",
       "credentials": {
         "pineconeApi": {
           "id": "F5m0CSbwpklaMsfj",
           "name": "PineconeApi account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "=openai/text-embedding-3-small",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
-      "typeVersion": 1.2,
-      "position": [
-        180,
-        620
-      ],
-      "id": "bdad371b-7955-4ba9-bd6e-ec9d36f41f03",
-      "name": "Embeddings OpenAI",
-      "credentials": {
-        "openAiApi": {
-          "id": "n7iFTiVV0J9Rp8GI",
-          "name": "OpenAi account"
         }
       }
     },
@@ -132,8 +128,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        620,
-        360
+        640,
+        480
       ],
       "id": "5bac9c1a-c073-4e45-a929-016f91f07f9f",
       "name": "OpenAI Chat Model1",
@@ -151,22 +147,26 @@
       "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
       "typeVersion": 1.1,
       "position": [
-        380,
-        220
+        432,
+        256
       ],
       "id": "e131571c-d94e-4d16-ba2c-41f6eef80bce",
       "name": "tqla"
     },
     {
-      "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
-      "typeVersion": 1,
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are an AI assistant specialized in analyzing Tesla's quarterly financial reports.\\nYour primary task is to answer questions accurately and precisely using the vector database, which contains relevants documents (Q3 and Q4 resports).\n\nOnly provide information that you retrive from documents (or verfied experto knowledge). If something is not included in the dataset or is unclear, clearly state that you do not have sufficient information\n\nStructure of your response:\n\nConcise and to the point\n\nSpecific numbers and facts,when available. \n\n\nClearly indicate wich quarterly report (Q3 or Q4) the information comes from\n\nObjective:\n\nProvide users with reliable and quick insights into Tesla's quarterly financials withou unnecessary details."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
       "position": [
-        800,
-        180
+        224,
+        16
       ],
-      "id": "e070e191-3348-4e6d-a531-0a43b980b952",
-      "name": "Calculator"
+      "id": "cd969105-3a79-49b8-8b47-255215e3cd00",
+      "name": "AI Agent"
     }
   ],
   "connections": {
@@ -203,45 +203,12 @@
         ]
       ]
     },
-    "Pinecone Vector Store": {
-      "ai_vectorStore": [
-        [
-          {
-            "node": "tqla",
-            "type": "ai_vectorStore",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Embeddings OpenAI": {
       "ai_embedding": [
         [
           {
-            "node": "Pinecone Vector Store",
+            "node": "Pinecone Vector Store1",
             "type": "ai_embedding",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenAI Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "tqla",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "tqla": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
             "index": 0
           }
         ]
@@ -257,22 +224,57 @@
           }
         ]
       ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "tqla",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ],
+      "ai_tool": [
+        []
+      ]
+    },
+    "tqla": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "tqla",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
   "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "nodeGroups": [],
   "pinData": {},
-  "versionId": "d81a337b-5da3-4034-9a8c-2195a6be9837",
+  "versionId": "31501e7f-33bb-4e3e-a9d7-42bbfe1c14dd",
   "activeVersionId": null,
-  "versionCounter": 1,
-  "triggerCount": 0,
-  "sourceWorkflowId": null,
+  "versionCounter": 82,
+  "triggerCount": 1,
   "tags": [],
   "shared": [
     {
@@ -288,14 +290,8 @@
         "name": "kenji maeda <kenjimaedafamily@gmail.com>",
         "type": "personal",
         "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "030dd5bf-9c48-4b90-8af9-957c3e0050d4"
+        "description": null
       }
     }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
-  }
+  ]
 }
