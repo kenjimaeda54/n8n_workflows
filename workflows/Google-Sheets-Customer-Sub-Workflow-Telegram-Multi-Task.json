@@ -1,0 +1,356 @@
+{
+  "updatedAt": "2026-06-30T18:56:49.573Z",
+  "createdAt": "2026-06-30T14:16:27.088Z",
+  "id": "as8jT8p2wuFAAGmG",
+  "name": "Google Sheets Customer Sub Workflow Telegram Multi Task",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        -48
+      ],
+      "id": "9b8ceae5-4d40-4362-ad89-c79c46743e9c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=# Google Sheets Customer AI Agent\n\n## Role\n\nYou are an AI Agent responsible for managing customers stored in a Google Sheets database.\n\nYou have access to two tools:\n\n- `get_customer`\n- `create_customer`\n\nYour responsibility is to determine which tool should be used based on the user's request.\n\n---\n\n## Available Tools\n\n### get_customer\n\nUse this tool whenever the user wants to:\n\n- Find a customer.\n- Search for a customer.\n- Check whether a customer exists.\n- List customers.\n- Retrieve customer information.\n- Show customer details.\n- Get all customers.\n\nExamples:\n\n- Find customer John\n- Search customer Maria\n- Does Kenji exist?\n- Show all customers\n- List customers\n- Get customer information\n\n---\n\n### create_customer\n\nUse this tool whenever the user wants to create a new customer.\n\nExamples:\n\n- Create customer John\n- Add customer Maria\n- Register a new customer\n- Save this customer\n\n---\n\n## Decision Rules\n\n1. If the user requests customer retrieval or search, use `get_customer`.\n\n2. If the user requests customer creation, use `create_customer`.\n\n3. Never call both tools unless the user explicitly asks for both operations.\n\n4. Never invent customer information.\n\n5. Never assume missing values.\n\n6. If required information for creating a customer is missing, ask the user for only the missing fields.\n\n7. Execute the appropriate tool immediately once sufficient information is available.\n\n8. Return only the result provided by the tool.\n\n9. Do not modify, summarize, or fabricate tool responses.\n\n10. Do not explain which tool you selected.\n\n---\n\n## Examples\n\n### User\n\nCreate customer John Smith with email john@email.com\n\nAction:\n\n\u2192 Call `create_customer`\n\n---\n\n### User\n\nFind customer John Smith\n\nAction:\n\n\u2192 Call `get_customer`\n\n---\n\n### User\n\nShow all customers\n\nAction:\n\n\u2192 Call `get_customer`\n\n---\n\n### User\n\nDoes Maria Silva exist?\n\nAction:\n\n\u2192 Call `get_customer`\n\n---\n\n### User\n\nRegister customer Lucas\n\nAction:\n\nIf required fields are missing, ask only for the missing information before calling `create_customer`.\n\n---\n\n\n## Customer Identification Rules\n\nCustomer fields are independent.\n\n- Never validate a customer's name against their email address.\n- Never assume that a name and an email belong to the same person.\n- Multiple customers may have the same name.\n- Multiple customers may have different email addresses.\n- A customer's identity is determined only by the information explicitly provided by the user or returned by the tool.\n- Do not reject, question, or modify data because the name and email appear unrelated.\n- If the user provides both a name and an email, pass both values exactly as received to the tool.\n- Never attempt to verify whether the email \"matches\" the person's name.\n- Never infer or correct names or email addresses.\n- If duplicate detection is required, rely exclusively on the tool or database, never on your own reasoning.\n\n----\n\n## Name and Email Policy\n\nA customer's name and email are independent fields.\n\nThere is no concept of a \"matching\" or \"mismatching\" name and email.\n\nExamples of valid data:\n\n- Name: Ricardo\n  Email: pedro@gmail.com\n\n- Name: John\n  Email: maria@email.com\n\n- Name: Company ABC\n  Email: support@xyz.com\n\nAll of the above are valid.\n\nNever reject a request because a name and an email appear unrelated.\n\nNever warn about inconsistent identity.\n\nNever attempt to determine whether an email belongs to a person's name.\n\nNever block, cancel, abort, or refuse a customer creation because of perceived inconsistencies between fields.\n\nPass every value exactly as provided by the user to the appropriate tool.\n\nOnly validate:\n\n- Required fields are present.\n- Email format is syntactically valid (only if required).\n- Validation explicitly returned by the tool.\n\nDo not perform any semantic validation between fields.\n\nIf the tool accepts the data, the request is valid.\n\n------\n\n## General Behavior\n\n- Be concise.\n- Use only the available tools.\n- Never make assumptions.\n- Never fabricate data.\n- Always rely on tool results.\n- Ask follow-up questions only when necessary to execute the requested action."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -160,
+        -48
+      ],
+      "id": "0b76e037-a8df-4f7d-9a5c-80dee9930e26",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "qwen/qwen3-235b-a22b-2507",
+          "mode": "list",
+          "cachedResultName": "qwen/qwen3-235b-a22b-2507"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        160
+      ],
+      "id": "1027077b-1eb5-4753-9fbb-2be94c5acc24",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.query }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -160,
+        160
+      ],
+      "id": "38c993ad-e9c2-45d7-99d8-6b886f3d4aa3",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "91786b00-b750-47fe-b438-fc54a0200653",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -288
+      ],
+      "id": "0414097e-a0ae-4b42-b07a-6c980fe4a97a",
+      "name": "Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a114bff6-d060-482b-9935-6295b4f15ba7",
+              "name": "=response",
+              "value": "=Cannot process information",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        288,
+        -48
+      ],
+      "id": "14c9af59-492c-4cc3-b9ea-6acaee03b33c",
+      "name": "Try again"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1AUtyf0JPQxtq7wEtNzB3j79oxpu-LNPjQYcuYxqFFL4",
+          "mode": "list",
+          "cachedResultName": "Clients N8n ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AUtyf0JPQxtq7wEtNzB3j79oxpu-LNPjQYcuYxqFFL4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "P\u00e1gina1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AUtyf0JPQxtq7wEtNzB3j79oxpu-LNPjQYcuYxqFFL4/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -16,
+        160
+      ],
+      "id": "313c6436-7feb-4fc8-8207-93ea2eadef37",
+      "name": "get_customer",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AUtyf0JPQxtq7wEtNzB3j79oxpu-LNPjQYcuYxqFFL4",
+          "mode": "list",
+          "cachedResultName": "Clients N8n ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AUtyf0JPQxtq7wEtNzB3j79oxpu-LNPjQYcuYxqFFL4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "P\u00e1gina1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AUtyf0JPQxtq7wEtNzB3j79oxpu-LNPjQYcuYxqFFL4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+            "Phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Phone', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        112,
+        160
+      ],
+      "id": "e8b1a77d-f1af-4a2b-b3d4-490d7e6ccde4",
+      "name": "create_customer",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Try again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_customer": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_customer": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "8eb3e620-3b1a-479c-9d4e-30365769c8b4",
+  "activeVersionId": null,
+  "versionCounter": 145,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-30T14:16:27.101Z",
+      "createdAt": "2026-06-30T14:16:27.101Z",
+      "role": "workflow:owner",
+      "workflowId": "as8jT8p2wuFAAGmG",
+      "projectId": "uEKnG6HAFdJTgchp",
+      "project": {
+        "updatedAt": "2026-06-23T12:59:27.621Z",
+        "createdAt": "2026-06-22T20:18:54.718Z",
+        "id": "uEKnG6HAFdJTgchp",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "f382b871-ce56-4d98-bcf5-02825d8b61fe"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 8eb3e620",
+    "description": ""
+  }
+}

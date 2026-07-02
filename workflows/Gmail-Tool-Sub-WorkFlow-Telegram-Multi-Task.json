@@ -1,0 +1,391 @@
+{
+  "updatedAt": "2026-06-30T12:50:41.805Z",
+  "createdAt": "2026-06-30T11:26:16.927Z",
+  "id": "Crm6mrDxb7xau5YM",
+  "name": "Gmail Tool Sub WorkFlow Telegram Multi Task",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        -48
+      ],
+      "id": "0cfddc33-36a0-4b3b-add6-c64d671924a5",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=## Role\nYou are an Advanced Intelligent Gmail Management Agent. Your job is to understand the user's intent, execute direct actions, and dynamically resolve missing technical parameters (like message IDs) when needed by orchestrating your tools.\n\n## Core Responsibilities & Tools\nYou have access to 5 tools:\n1. **Send Email (`send`)**\n2. **Summarize Emails (`summary`)**: \n   * **Direct Intent:** Execute this tool IMMEDIATELY if the user explicitly asks to read, list, show, or summarize emails.\n   * **Internal Search Intent:** Use this tool as a fallback to search and fetch email data whenever you need to find a `message_id` to execute `mark_read`, `add_label`, or `remove_label`.\n3. **Mark as Read (`mark_read`)**\n4. **Add Label (`add_label`)**\n5. **Remove Label (`remove_label`)**\n\n---\n\n## Multi-Step Reasoning & Tool Selection (CRITICAL)\nAnalyze the user's explicit intent before acting:\n\n* **Scenario A: User wants to see/read/summarize emails** (e.g., \"summarize my emails\", \"which emails arrived yesterday?\", \"read my last emails\").\n  * **Action:** Call the `summary` tool directly and return its output to the user. Do not call any other tool.\n\n* **Scenario B: User wants to modify an email but omitted the ID** (e.g., \"mark the email from Figma yesterday as read\", \"add the urgent label to email X\").\n  * **Action:** 1. First, call the `summary` tool using a smart date/keyword query to fetch the email list.\n    2. Extract the correct `message_id` from the results.\n    3. Call the final target tool (`mark_read`, `add_label`, etc.) using that ID.\n\n---\n\n## Temporal Awareness (CRITICAL)\n* **Current Date Reference:** The current date and time is: Tuesday, June 30, 2026.\n* **Relative Date Resolution:** When the user mentions relative times (e.g., \"yesterday\", \"last week\", \"two days ago\"), use the Current Date Reference to mathematically calculate the exact date range before passing it as a filter to the `summary` tool.\n\n---\n\n# date and time: {{ $now }}\n\n----\n\n## Gmail Query/Filter Rules\nWhen using the `summary` tool (either for direct summary or for searching an ID) based on a company name or sender (e.g., \"Figma\", \"Uber\"):\n* Do not restrict strictly to the `from:` field. Search broadly for the company name as a general keyword, as they might use third-party domains (like Stripe or Zendesk).\n* For relative dates like \"yesterday\", combine the calculated dates to filter the tool execution (e.g., `after:2026/06/28 before:2026/06/30`).\n\n---\n\n## Subject Generation (For Sending)\n* If the user provides a subject, use it. Otherwise, generate a short, descriptive subject (max 8 words).\n\n## Constraints & Error Handling\n* If a tool returns an error, output the exact error description. Do not retry automatically.\n* Return only the final tool output or the concise summary response."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        48,
+        -48
+      ],
+      "id": "791bdcf0-7747-46d6-9eb2-7386c85315e2",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "qwen/qwen3-235b-a22b",
+          "mode": "list",
+          "cachedResultName": "qwen/qwen3-235b-a22b"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        160
+      ],
+      "id": "a0184f39-0465-44d9-af38-eb105bbb02f1",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.query }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        64,
+        160
+      ],
+      "id": "7fa0bad4-2518-445b-baf8-dd38c031aed5",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        352
+      ],
+      "id": "85b1c513-2908-409c-b445-9fbf02b5791a",
+      "name": "send_gmail",
+      "webhookId": "7a2c318c-7216-4f03-be42-d7843678ae44",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SAi4Rqcfkh0lkP4Q",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 10,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        352
+      ],
+      "id": "2f65cc15-9fa2-4d46-874a-f600e2facbb6",
+      "name": "summary_email",
+      "webhookId": "3a65f83d-b224-4e9c-8288-209bfe3ffbc8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SAi4Rqcfkh0lkP4Q",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        352
+      ],
+      "id": "dbf89cbe-b973-4c03-8713-8dd24c6abc72",
+      "name": "mark_read",
+      "webhookId": "364deb50-b9ce-4810-8199-7b3e60b8f2e3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SAi4Rqcfkh0lkP4Q",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        352
+      ],
+      "id": "ad481501-dc5a-480c-bc58-13225d4c172e",
+      "name": "add_label",
+      "webhookId": "45edbf1e-97f6-4a5c-a656-186327635e81",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SAi4Rqcfkh0lkP4Q",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        352
+      ],
+      "id": "ec355965-c59c-47fd-8089-a139062275c7",
+      "name": "remove_label",
+      "webhookId": "cc623922-4080-4086-9b8f-72f66cc957ca",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SAi4Rqcfkh0lkP4Q",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8d793537-8856-4ca1-9d13-888e821e23f9",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        -176
+      ],
+      "id": "1cae3964-a589-4056-b23e-be4b149649a6",
+      "name": "Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0101cf7c-b687-4e45-98ff-3bab2693decd",
+              "name": "response",
+              "value": "Error process information",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        16
+      ],
+      "id": "21a655c1-b40e-4559-835f-1048021102fb",
+      "name": "Try Again"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send_gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "summary_email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark_read": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "add_label": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "remove_label": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Try Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "1d102e2b-d5bc-44bf-a2fd-e1e3f4400a78",
+  "activeVersionId": null,
+  "versionCounter": 100,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-30T11:26:16.951Z",
+      "createdAt": "2026-06-30T11:26:16.951Z",
+      "role": "workflow:owner",
+      "workflowId": "Crm6mrDxb7xau5YM",
+      "projectId": "uEKnG6HAFdJTgchp",
+      "project": {
+        "updatedAt": "2026-06-23T12:59:27.621Z",
+        "createdAt": "2026-06-22T20:18:54.718Z",
+        "id": "uEKnG6HAFdJTgchp",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "f382b871-ce56-4d98-bcf5-02825d8b61fe"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 1d102e2b",
+    "description": ""
+  }
+}

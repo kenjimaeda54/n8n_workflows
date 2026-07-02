@@ -1,0 +1,423 @@
+{
+  "updatedAt": "2026-06-29T15:16:35.317Z",
+  "createdAt": "2026-06-27T21:29:40.085Z",
+  "id": "Gvqn4PNFps5UcmXr",
+  "name": "Calendar Sub WorkFlow Telegram Multi Task",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        -48
+      ],
+      "id": "b897e3b1-272a-44ec-b969-9c27260fb829",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=## Role\n\nYou are an AI Calendar Agent responsible for managing calendar events.\n\nAlways determine the user's intent and use the appropriate calendar tool.\n\n---\n\n# date and time: ${{ $now }}\n\n----\n\n# Tool Selection\n\n## Create Event\n\nUse `create_event` when the user wants to:\n\n- Create an event\n- Schedule an event\n- Add an event to the calendar\n- Book an appointment\n- Create a reminder\n\n\nExtract whenever possible:\n\n- Event title\n- Date\n- Start time\n- End time\n- Description\n- Location\n\nIf the user does not provide an end time, automatically set the end time to **1 hour after the start time**.\n\nOnly ask for clarification if one or more of the following cannot be determined:\n\n- Event title\n- Event date\n- Start time\n\nExamples:\n\n- Create a meeting tomorrow at 2 PM.\n- Schedule lunch with Sarah Friday at noon.\n- Add a dentist appointment next Monday.\n\n\n---\n\n## Create Event with Attendees\n\nUse `create_event_attendees` when the user wants to create an event that includes one or more participants.\n\nExamples:\n\n- Create a meeting with john@example.com tomorrow.\n- Schedule a call with Sarah and Mike.\n- Create a team meeting and invite everyone.\n\nIf one or more participant email addresses are provided, always use this tool instead of `create_event`.\nIf the user does not provide an end time, automatically set the end time to **1 hour after the start time**.\n\n---\n\n## Retrieve Events\n\nUse `get_events` when the user wants to:\n\n- View events\n- Search events\n- List events\n- Check the calendar\n- See upcoming appointments\n- Find meetings\n\nExamples:\n\n- What do I have today?\n- Show tomorrow's events.\n- List my meetings this week.\n- Search for Project Review.\n\n---\n\n## Update Event\n\nUse `update_event` when the user wants to modify an existing event.\n\nExamples:\n\n- Move my meeting to 3 PM.\n- Change the title.\n- Add a participant.\n- Update tomorrow's appointment.\n\n---\n\n## Delete Event\n\nUse `delete_event` when the user wants to remove an event.\n\nExamples:\n\n- Delete tomorrow's meeting.\n- Cancel my dentist appointment.\n- Remove the Sprint Review.\n\n---\n\n# General Rules\n\n- Always choose exactly one appropriate tool.\n- Never invent calendar information.\n- Extract as much information as possible from the user's request.\n- Ask for clarification only when required to execute the selected tool.\n- Return only the tool output.\n- If a tool returns an error, return the exact error.\n",
+          "enableStreaming": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "06859066-fe27-4696-98b1-61ae69266f39",
+      "name": "AI Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "minimax/minimax-m3",
+          "mode": "list",
+          "cachedResultName": "minimax/minimax-m3"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        160
+      ],
+      "id": "d9911e7d-2fc1-472f-b9b6-a5e0c6565da3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.query }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        16,
+        160
+      ],
+      "id": "851f411b-fcdc-40b0-9f4f-40f0fd558b7b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "=kenjimaedafamily@gmail.com",
+          "mode": "id"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        272
+      ],
+      "id": "0c772280-3e48-4d58-9689-8737f9363e84",
+      "name": "create_event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LJdXKija8Z7MTbCz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "kenjimaedafamily@gmail.com",
+          "mode": "list",
+          "cachedResultName": "kenjimaedafamily@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        272
+      ],
+      "id": "828a064c-6a6b-4295-9c7f-6a0a358a5d75",
+      "name": "get_events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LJdXKija8Z7MTbCz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "51546477-67e4-4a9c-ae94-7652162e01e6",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        -160
+      ],
+      "id": "9caf8b21-6445-4712-b268-927adb5ae31f",
+      "name": "Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e984e6a7-98af-4e54-8575-b2b3fa46a221",
+              "name": "response",
+              "value": "Try again error on flux",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        0
+      ],
+      "id": "8af1297c-a160-40a7-a65d-08a2e1f54c55",
+      "name": "Try Again"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "kenjimaedafamily@gmail.com",
+          "mode": "list",
+          "cachedResultName": "kenjimaedafamily@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        272
+      ],
+      "id": "0ea7ebb6-3f17-4720-846a-be53ded31979",
+      "name": "create_event_attendess",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LJdXKija8Z7MTbCz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "kenjimaedafamily@gmail.com",
+          "mode": "list",
+          "cachedResultName": "kenjimaedafamily@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        272
+      ],
+      "id": "aea4cfe6-7096-4726-897d-7d0abb5c3092",
+      "name": "delete_event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LJdXKija8Z7MTbCz",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "kenjimaedafamily@gmail.com",
+          "mode": "list",
+          "cachedResultName": "kenjimaedafamily@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "updateFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        272
+      ],
+      "id": "c21537e7-99cc-48b6-9b99-0a8beb928df3",
+      "name": "udpate_event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LJdXKija8Z7MTbCz",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Try Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create_event_attendess": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "udpate_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "e32aa7ee-3a1b-4d50-a4a3-4cf52bc9bcf2",
+  "activeVersionId": null,
+  "versionCounter": 100,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-27T21:29:40.099Z",
+      "createdAt": "2026-06-27T21:29:40.099Z",
+      "role": "workflow:owner",
+      "workflowId": "Gvqn4PNFps5UcmXr",
+      "projectId": "uEKnG6HAFdJTgchp",
+      "project": {
+        "updatedAt": "2026-06-23T12:59:27.621Z",
+        "createdAt": "2026-06-22T20:18:54.718Z",
+        "id": "uEKnG6HAFdJTgchp",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "f382b871-ce56-4d98-bcf5-02825d8b61fe"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version e32aa7ee",
+    "description": ""
+  }
+}

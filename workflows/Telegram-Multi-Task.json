@@ -1,0 +1,642 @@
+{
+  "updatedAt": "2026-06-30T19:10:36.295Z",
+  "createdAt": "2026-06-27T20:52:27.856Z",
+  "id": "H9frefQffn1H0qBq",
+  "name": "Telegram Multi Task",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -320,
+        -224
+      ],
+      "id": "cc326434-b0b1-419c-b446-692f187192e1",
+      "name": "Telegram Trigger",
+      "webhookId": "0ce151ae-d3a5-4d6d-8328-9eba2f601dc5",
+      "credentials": {
+        "telegramApi": {
+          "id": "1ON6EfgJqTR9tyCc",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "28f89d67-5a6a-4153-a18b-4d51902d7a1a"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "280bd400-a8b7-4c5e-adc7-b0994b53b65e",
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -80
+      ],
+      "id": "fc4a2538-abd1-4c0b-9f14-1833672b1a7a",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de171990-0bac-4c53-94e5-2cc3cdfb5a6c",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        -64
+      ],
+      "id": "d7b8d46c-22f3-45f9-87dc-691ac104ae7d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        240
+      ],
+      "id": "c897da2a-71aa-4473-8dc4-9c485b18b421",
+      "name": "Get a file",
+      "webhookId": "bacd91a3-271d-4590-874c-4a716d965b8b",
+      "credentials": {
+        "telegramApi": {
+          "id": "1ON6EfgJqTR9tyCc",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -176,
+        240
+      ],
+      "id": "31946622-74df-4d08-b55c-a290ba510007",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ \n  { \n     \"input_audio\": {\n         \"data\": $json.data,\n         \"format\": \"ogg\",\n       },\n      \"model\":\"openai/whisper-large-v3\",\n      \"language\":\"en\"\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        400,
+        240
+      ],
+      "id": "655f7e46-1574-47a4-b93f-7d8090a08fab",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "4i8PDZSqr2Q81Fts",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1daf94f-85d5-41b1-9a67-64351fc815e9",
+              "name": "text ",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        240
+      ],
+      "id": "6b14adf3-d407-4b69-805e-2cede7da9b5f",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool whenever you need to interact with the user's calendar, including creating, retrieving, searching, updating, deleting events, managing participants, or checking availability.",
+        "workflowId": {
+          "__rl": true,
+          "value": "Gvqn4PNFps5UcmXr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Gvqn4PNFps5UcmXr",
+          "cachedResultName": "Calendar Sub WorkFlow Telegram Multi Task"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        256
+      ],
+      "id": "e7fa2f32-d8c9-4cf8-b651-213ccdb27d43",
+      "name": "calendar_tool"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "= {{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1168,
+        -80
+      ],
+      "id": "157c6658-351e-4b6b-9ba2-bf2d01779091",
+      "name": "Send a text message",
+      "webhookId": "cfe40b56-2d94-426c-bed3-2e374c7ed44f",
+      "credentials": {
+        "telegramApi": {
+          "id": "1ON6EfgJqTR9tyCc",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.text }} {{ $json['text '] }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        1008,
+        256
+      ],
+      "id": "2b5b4f99-235f-4ca6-9f9a-f76a31ed9558",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "qwen/qwen3-235b-a22b",
+          "mode": "list",
+          "cachedResultName": "qwen/qwen3-235b-a22b"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        272
+      ],
+      "id": "98504996-acee-4578-a474-904d536e6064",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "= {{ $json.text }}{{ $json['text '] }}",
+        "options": {
+          "systemMessage": "=## Role\n\nYou are an AI Multi-Task Agent capable of handling different types of requests by using the tools available to you.\n\nYour primary responsibility is to:\n\n* Understand the user's request.\n* Determine whether a tool should be used.\n* Select the most appropriate tool.\n* Execute the tool with the correct parameters.\n* Return the tool result to the user through Telegram.\n\n---\n\n# Responsibilities\n\n* Understand the user's intent before taking action.\n* Use the most appropriate tool for the requested task.\n* If multiple tools are required to complete the request, execute them in the correct order.\n* Never invent information that should come from a tool.\n* If a required parameter is missing, ask the user only for the missing information.\n* Keep responses concise and useful.\n\n---\n\n# calendar_tool\n\nUse this tool whenever the user's request involves calendar operations, including but not limited to:\n\nCreating events\nRetrieving events\nSearching events\nUpdating events\nDeleting events\nCreating meetings with participants\nListing upcoming events\nChecking availability\nManaging appointments or reminders\n\nAlways determine whether the user's request requires interacting with the calendar. If it does, use calendar_tool.\n\nExtract all relevant information from the user's request whenever possible, including:\n\nEvent title\nDate\nStart time\nEnd time\nParticipants\nDescription\nLocation\n\nOnly ask the user for clarification if the tool cannot be executed due to missing required information.\n\nNever invent event details.\n\nReturn only the tool output when the execution succeeds.\n\nIf the tool returns an error, return the exact error without modification.\n\n\n---\n\n## google_sheets_customer_tool\n\nUse this tool whenever the user's request involves adding, registering, or saving a new client into the clients table/Google Sheets database.\n\nDetermine the user's intent and invoke this tool whenever a new client onboarding or registration operation is required.\n\nExtract only the information that is explicitly provided or can be reasonably inferred from the user's request.\n\nDo not require the user to provide client fields in a specific format.\n\nFor example, all of the following should be understood naturally:\n- Add a new client named John Doe, email john@example.com, phone 123456.\n- Register Kenji Maeda as a new client.\n- Save this customer to the table: Sarah Connor, business manager.\n\nIf some information is missing but can be reasonably inferred from the request, let the Google Sheets workflow determine the appropriate values or placeholders.\n\nAsk the user for clarification only when the requested operation cannot be completed because essential information is missing (for example, no client name or identifiable data is provided at all).\n\nReturn only the tool output.\n\nIf the tool returns an error, return the exact error without modification.\n\n\n\n---\n\n## gmail_tool\n\nUse this tool whenever the user's request involves Gmail operations, including but not limited to:\n\n- Sending emails\n- Reading emails\n- Retrieving email summaries\n- Searching emails\n- Replying to emails\n- Forwarding emails\n- Marking emails as read or unread\n- Archiving emails\n- Deleting emails\n- Managing email labels\n\nDetermine the user's intent and invoke this tool whenever a Gmail operation is required.\n\nExtract only the information that is explicitly provided or can be reasonably inferred from the user's request.\n\nDo not require the user to provide email fields in a specific format.\n\nFor example, all of the following should be understood naturally:\n\n- Send an email to kenjifamily3@gmail.com saying I'll be late.\n- Email kenjifamily3@gmail.com and ask if he wants to go to lunch.\n- Tell John the deployment is finished.\n- Reply to the latest email from Sarah thanking her.\n- Mark my latest email as read.\n- Summarize today's emails.\n\nIf some information is missing but can be reasonably inferred from the request, let the Gmail workflow determine the appropriate values.\n\nAsk the user for clarification only when the requested Gmail operation cannot be completed because essential information is missing (for example, no recipient is provided when sending an email).\n\nReturn only the tool output.\n\nIf the tool returns an error, return the exact error without modification.\n\n---\n\n\n---\n\n# General Rules\n\n* Always determine the user's intent before acting.\n* Always prefer using tools over generating information.\n* Never fabricate data returned by tools.\n* Never fabricate recipients, events, emails, files, or identifiers.\n* Preserve user-provided information exactly.\n* Ask for clarification only when required to execute a tool.\n* Be deterministic and reliable.\n* Return responses suitable for sending via Telegram.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        896,
+        -80
+      ],
+      "id": "5abf8c73-9492-424e-86d5-ffe814ea83a2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool whenever the user's request involves Gmail operations, including retrieving email summaries, searching emails, sending emails, marking emails as read or unread, and other email management tasks.",
+        "workflowId": {
+          "__rl": true,
+          "value": "Crm6mrDxb7xau5YM",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Crm6mrDxb7xau5YM",
+          "cachedResultName": "Gmail Tool Sub WorkFlow Telegram Multi Task"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        256
+      ],
+      "id": "f307c197-8fca-4db1-9e5d-d2a2f06f7491",
+      "name": "gmail_tool"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to send client details and product sales data to the dedicated Google Sheets storage workflow.",
+        "workflowId": {
+          "__rl": true,
+          "value": "as8jT8p2wuFAAGmG",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/as8jT8p2wuFAAGmG",
+          "cachedResultName": "Google Sheets Customer Sub Workflow Telegram Multi Task"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1520,
+        256
+      ],
+      "id": "5fee89c5-a979-4756-b95f-e0718369b983",
+      "name": "google_sheets_customer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "92b5cb71-3a51-4a4b-89cd-f50681487348",
+              "leftValue": "={{ $json.message.chat.id }}",
+              "rightValue": 889717933,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "e22310a1-382b-46df-9203-66fe6ff6cd74",
+              "leftValue": "={{ $json.message.from.username }}",
+              "rightValue": "RicardoMaeda",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -112,
+        -224
+      ],
+      "id": "3e45528b-a0ac-42ff-b0e0-960fe85c2527",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -32
+      ],
+      "id": "b9d45cd2-e013-4bba-8abf-7d50e72fd20f",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "calendar_tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gmail_tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "google_sheets_customer": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "86058b7e-0785-4179-a4f9-5ef88b022ab2",
+  "activeVersionId": null,
+  "versionCounter": 211,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-27T20:52:27.873Z",
+      "createdAt": "2026-06-27T20:52:27.873Z",
+      "role": "workflow:owner",
+      "workflowId": "H9frefQffn1H0qBq",
+      "projectId": "uEKnG6HAFdJTgchp",
+      "project": {
+        "updatedAt": "2026-06-23T12:59:27.621Z",
+        "createdAt": "2026-06-22T20:18:54.718Z",
+        "id": "uEKnG6HAFdJTgchp",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "f382b871-ce56-4d98-bcf5-02825d8b61fe"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}
