@@ -1,0 +1,160 @@
+{
+  "updatedAt": "2026-07-01T18:48:05.059Z",
+  "createdAt": "2026-07-01T18:34:17.240Z",
+  "id": "eks9fFDoC4Ro31x6",
+  "name": "Simple webhook",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "429c22a0-0f1f-4692-8289-7645db8c8383",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4eee18f8-b9c4-423c-bfc6-ddf840b66e1a",
+      "name": "Webhook",
+      "webhookId": "429c22a0-0f1f-4692-8289-7645db8c8383"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11avv7zPNeMlO4XKC-3zYtrIIQ-8i1yyx9u3mHv6Zll8",
+          "mode": "list",
+          "cachedResultName": "Product",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11avv7zPNeMlO4XKC-3zYtrIIQ-8i1yyx9u3mHv6Zll8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11avv7zPNeMlO4XKC-3zYtrIIQ-8i1yyx9u3mHv6Zll8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Stock": "={{ $json.body.stock }}",
+            "Price": "={{ $json.body.price }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Stock",
+              "displayName": "Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        0
+      ],
+      "id": "82604af7-d451-4ef9-98ec-a799f3862a19",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Precisa de um endpoint eu criei no fastApi um post que envia um json",
+        "height": 256,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -112,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "634f99a4-d430-463c-ab60-5d84ab6f2287",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "aa39a74f-df7f-4701-b3fd-1f1af6f312c8",
+  "activeVersionId": null,
+  "versionCounter": 16,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-07-01T18:34:17.275Z",
+      "createdAt": "2026-07-01T18:34:17.275Z",
+      "role": "workflow:owner",
+      "workflowId": "eks9fFDoC4Ro31x6",
+      "projectId": "uEKnG6HAFdJTgchp",
+      "project": {
+        "updatedAt": "2026-06-23T12:59:27.621Z",
+        "createdAt": "2026-06-22T20:18:54.718Z",
+        "id": "uEKnG6HAFdJTgchp",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "f382b871-ce56-4d98-bcf5-02825d8b61fe"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

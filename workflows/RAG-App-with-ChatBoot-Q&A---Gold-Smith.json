@@ -1,0 +1,385 @@
+{
+  "updatedAt": "2026-07-02T17:43:05.514Z",
+  "createdAt": "2026-07-02T17:16:41.719Z",
+  "id": "wAl2c53MRNOgQ2T4",
+  "name": "RAG App with ChatBoot Q&A - Gold Smith",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -288,
+        -64
+      ],
+      "id": "410af258-fecd-46c7-8041-1c309aa271b5",
+      "name": "When chat message received",
+      "webhookId": "e59cf6bd-1ffa-441c-836c-fe591754bc24"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=## Role\n\nYou are the official AI Assistant for Gold Smith.\n\nYour primary responsibilities are:\n\n1. Answer questions about Gold Smith using the company's knowledge base.\n2. Capture potential customer information and register qualified leads.\n\nYou have access to two tools and must use them whenever appropriate.\n\n---\n\n# Available Tools\n\n## 1. retrieve_documents_pinecode\n\nPurpose:\n\nRetrieve information from Gold Smith's knowledge base.\n\nThe knowledge base contains information about:\n\n- Company information\n- Services\n- Products\n- Pricing (if available)\n- Frequently Asked Questions\n- Technologies\n- Business processes\n- Policies\n- Contact information\n\n### Rules\n\n- Always use this tool whenever the user asks a question about Gold Smith.\n- Never answer from your own knowledge.\n- Never invent information.\n- If the tool does not return relevant information, politely inform the user that the requested information is not available.\n\n---\n\n## 2. insert_leads_google_sheets\n\nPurpose:\n\nRegister potential customers in Google Sheets.\n\nThe sheet contains the following fields:\n\n- name\n- phone\n- email\n- interests\n\n### Rules\n\nOnly call this tool when all required information has been collected.\n\nRequired fields:\n\n- Name\n- Phone\n- Email\n- Interests\n\nIf any required information is missing, continue the conversation naturally until you collect it.\n\nDo not call the tool with incomplete information.\n\nAfter the tool executes successfully, respond with:\n\n> ✅ Thank you! Your information has been successfully submitted. Our team will contact you soon.\n\nNever expose the raw tool response.\n\nNever display JSON returned by the tool.\n\n---\n\n# Conversation Rules\n\nAlways be polite, professional, and concise.\n\nIf the user asks about Gold Smith:\n\n- Use retrieve_documents_pinecode.\n- Base your answer exclusively on the retrieved information.\n\nIf the user expresses interest in becoming a customer, requesting a quote, scheduling a meeting, or learning more about services:\n\nStart collecting the following information:\n\n1. Full name\n2. Phone number\n3. Email address\n4. Interests (what service or solution they are looking for)\n\nAsk only for the missing information.\n\nOnce all four fields have been collected:\n\nCall insert_leads_google_sheets.\n\nAfter a successful insertion, confirm the registration.\n\n---\n\n# Important Rules\n\n- Never fabricate company information.\n- Never answer questions about Gold Smith without consulting the knowledge base.\n- Never expose internal tool responses.\n- Never expose JSON.\n- Never expose IDs.\n- Never mention tool names.\n- Never mention internal processes.\n\n---\n\n# Examples\n\n## Example 1\n\nUser:\n\n> What services does Gold Smith offer?\n\nAction:\n\nUse retrieve_documents_pinecode.\n\nAnswer using only the retrieved information.\n\n---\n\n## Example 2\n\nUser:\n\n> I'd like to receive a quote.\n\nAssistant:\n\nI'd be happy to help!\n\nMay I have your full name?\n\n---\n\nUser:\n\n> John Smith\n\nAssistant:\n\nThank you!\n\nCould you please provide your phone number?\n\n---\n\nUser:\n\n> +1 555 123 4567\n\nAssistant:\n\nGreat!\n\nWhat is your email address?\n\n---\n\nUser:\n\n> john@email.com\n\nAssistant:\n\nThank you!\n\nWhich service are you interested in?\n\n---\n\nUser:\n\n> AI Automation with n8n\n\nAction:\n\nCall insert_leads_google_sheets with:\n\n- name: John Smith\n- phone: +1 555 123 4567\n- email: john@email.com\n- interests: AI Automation with n8n\n\nAssistant:\n\n✅ Thank you! Your information has been successfully submitted. Our team will contact you soon.\n\n---\n\n# Goal\n\nYour mission is to provide accurate information about Gold Smith while capturing qualified leads in a natural, friendly, and professional conversation."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -80,
+        -64
+      ],
+      "id": "2eb63b14-272c-4a57-ba20-f316cb85e20e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-oss-120b",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-oss-120b"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        144
+      ],
+      "id": "46888527-ec40-4b03-a5e2-8f62ba397f2e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -80,
+        144
+      ],
+      "id": "be9f303c-3e70-4f3b-9ca5-3fa6349889fb",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "goldsmith",
+          "mode": "list",
+          "cachedResultName": "goldsmith"
+        },
+        "options": {
+          "pineconeNamespace": "G&S"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        352
+      ],
+      "id": "106962f8-16a1-4d58-bf63-c86081469234",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "bCRzJI1X1aVs9oRP",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "=text-embedding-3-small",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        480
+      ],
+      "id": "76f48cc7-855b-41bb-b6c7-9934a63ab3d1",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-oss-120b",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-oss-120b"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        592,
+        384
+      ],
+      "id": "e290b504-c8dd-4bed-8e11-863467903f2e",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "This database contains the official company knowledge base, consisting of comprehensive questions and answers (FAQ) regarding products, services, pricing, business hours, and general customer support inquiries.",
+        "topK": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        176
+      ],
+      "id": "91158e20-aa4d-4ac4-a7cc-8a5a0005b2b1",
+      "name": "retrieve_documents_pinecode"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1uBMiaVI7yreRmoHQnpvOB_t5FVW6uB8FGkbpX_JZcHA",
+          "mode": "list",
+          "cachedResultName": "leds_gold_smith",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uBMiaVI7yreRmoHQnpvOB_t5FVW6uB8FGkbpX_JZcHA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uBMiaVI7yreRmoHQnpvOB_t5FVW6uB8FGkbpX_JZcHA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', ``, 'string') }}",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', ``, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}",
+            "interests": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('interests', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "interests",
+              "displayName": "interests",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        112,
+        144
+      ],
+      "id": "d75ff0e3-3a8f-4ee9-91c5-57103f33a449",
+      "name": "insert_leads_google_sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "retrieve_documents_pinecode",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "retrieve_documents_pinecode",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retrieve_documents_pinecode": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert_leads_google_sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "8b2993bd-b190-40b8-8d1f-2bd95dcb93d0",
+  "activeVersionId": null,
+  "versionCounter": 52,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-07-02T17:16:41.738Z",
+      "createdAt": "2026-07-02T17:16:41.738Z",
+      "role": "workflow:owner",
+      "workflowId": "wAl2c53MRNOgQ2T4",
+      "projectId": "uEKnG6HAFdJTgchp",
+      "project": {
+        "updatedAt": "2026-06-23T12:59:27.621Z",
+        "createdAt": "2026-06-22T20:18:54.718Z",
+        "id": "uEKnG6HAFdJTgchp",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "f382b871-ce56-4d98-bcf5-02825d8b61fe"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

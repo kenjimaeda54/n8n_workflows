@@ -1,0 +1,149 @@
+{
+  "updatedAt": "2026-07-01T22:50:19.551Z",
+  "createdAt": "2026-07-01T19:30:57.487Z",
+  "id": "mRWYGNMAC77HUpb9",
+  "name": "MCP with claude desktop",
+  "description": "Connect cloude com mcp",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "ea14f532-ed4b-4ce7-a969-69735601c614"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        -80
+      ],
+      "id": "be379e0a-2f9b-47ac-859e-5ae3b4352ba3",
+      "name": "MCP Server Trigger",
+      "webhookId": "ea14f532-ed4b-4ce7-a969-69735601c614"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "11avv7zPNeMlO4XKC-3zYtrIIQ-8i1yyx9u3mHv6Zll8",
+          "mode": "list",
+          "cachedResultName": "Product",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11avv7zPNeMlO4XKC-3zYtrIIQ-8i1yyx9u3mHv6Zll8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11avv7zPNeMlO4XKC-3zYtrIIQ-8i1yyx9u3mHv6Zll8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        96,
+        208
+      ],
+      "id": "9954ae5b-3e59-4041-a213-89c3030bf8ae",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "kenjimaedafamily@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        192
+      ],
+      "id": "8303771b-e0ee-4d1b-9e46-6c2c9c027509",
+      "name": "Send a message in Gmail",
+      "webhookId": "72844aec-4213-404e-9b20-e7c3805f2a40",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SAi4Rqcfkh0lkP4Q",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "ffebf6cb-3fff-4e14-8b62-939c5b2acf47",
+  "activeVersionId": "f6e1fe53-d4d7-49d7-bce6-d3a79ccf430a",
+  "versionCounter": 13,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-07-01T19:30:57.508Z",
+      "createdAt": "2026-07-01T19:30:57.508Z",
+      "role": "workflow:owner",
+      "workflowId": "mRWYGNMAC77HUpb9",
+      "projectId": "uEKnG6HAFdJTgchp",
+      "project": {
+        "updatedAt": "2026-06-23T12:59:27.621Z",
+        "createdAt": "2026-06-22T20:18:54.718Z",
+        "id": "uEKnG6HAFdJTgchp",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "f382b871-ce56-4d98-bcf5-02825d8b61fe"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

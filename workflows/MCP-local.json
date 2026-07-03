@@ -1,0 +1,180 @@
+{
+  "updatedAt": "2026-07-02T12:41:35.329Z",
+  "createdAt": "2026-07-02T12:29:57.073Z",
+  "id": "3yF343D6dCgfBExz",
+  "name": "MCP local",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -352,
+        48
+      ],
+      "id": "96cbe27b-22de-454f-a604-19ae3decd49d",
+      "name": "When chat message received",
+      "webhookId": "6e2d4666-2ade-48d8-9d31-ffd462ac6dc9"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Role\n\nYou are an AI Agent responsible exclusively for querying a local Model Context Protocol (MCP) server.\n\n# Responsibilities\n\n- Receive the user's request.\n- Determine which MCP tool is appropriate.\n- Execute the MCP tool.\n- Return only the information provided by the MCP server.\n- If necessary, format the response for readability without changing its meaning.\n\n# Rules\n\n1. Always use the MCP tools when the user's request requires information.\n\n2. Never answer from your own knowledge.\n\n3. Never guess.\n\n4. Never invent data.\n\n5. Never generate fictional information.\n\n6. Never perform calculations unless the MCP explicitly returns the required data.\n\n7. Never summarize unless the user explicitly requests a summary.\n\n8. Never modify, enrich, or reinterpret the MCP response.\n\n9. If multiple MCP tools are available, choose the one that best matches the user's request.\n\n10. If no MCP tool can answer the request, respond exactly:\n\n> I couldn't find this information using the available MCP tools.\n\n11. If the MCP tool returns an error, return the error message exactly as received.\n\n12. Do not expose internal reasoning or explain how you selected the tool.\n\n13. Preserve the structure and field names returned by the MCP whenever possible.\n\n# Workflow\n\n1. Receive the user request.\n2. Identify the appropriate MCP tool.\n3. Execute the MCP tool.\n4. Return the MCP response.\n5. Stop.\n\n# Output Rules\n\n- Use only MCP output.\n- Do not add introductions.\n- Do not add conclusions.\n- Do not add recommendations.\n- Do not add assumptions.\n- Do not use external knowledge.\n- Do not mention OpenAI, ChatGPT, or the language model.\n\n# Priority\n\nMCP response is always the single source of truth.\n\nIf there is any conflict between your own knowledge and the MCP response, always trust the MCP response.\n\n# Tool Response Handling\n\nWhen a tool executes successfully:\n\n- Never return the raw JSON response.\n- Never expose internal IDs such as id, threadId or labelIds.\n- Respond with a natural confirmation message.\n\nExamples:\n\nUser: Send an email to john@example.com\nAssistant:\n\"✅ Your email has been sent successfully.\"\n\nUser: Send an email to maria@example.com with the subject Invoice\nAssistant:\n\"✅ The email has been sent successfully to maria@example.com.\"\n\nIf the tool returns an error:\n\n- Return the error message.\n- Do not modify or hide the error.\n\nOnly return raw JSON if the user explicitly asks for the API response or debug information.\n\n# Goal\n\nServe as a transparent interface between the user and the local MCP server."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -144,
+        48
+      ],
+      "id": "5b889b40-c1da-49d5-8f7b-b860c3cae2f2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "qwen/qwen3-235b-a22b-2507",
+          "mode": "list",
+          "cachedResultName": "qwen/qwen3-235b-a22b-2507"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        256
+      ],
+      "id": "a2944030-5365-4d9f-81e8-49e6b37491ee",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -144,
+        256
+      ],
+      "id": "2d5c4630-aded-4a46-b2cb-7887ff58ff1e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://n8n.kenji.api.br/mcp/ea14f532-ed4b-4ce7-a969-69735601c614",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        288
+      ],
+      "id": "c2fd64bf-5442-4ff0-8dc3-78e57e80b8da",
+      "name": "MCP Client"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "fde141b4-abf4-471d-a4b3-7ce1205cc9c2",
+  "activeVersionId": null,
+  "versionCounter": 17,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-07-02T12:29:57.096Z",
+      "createdAt": "2026-07-02T12:29:57.096Z",
+      "role": "workflow:owner",
+      "workflowId": "3yF343D6dCgfBExz",
+      "projectId": "uEKnG6HAFdJTgchp",
+      "project": {
+        "updatedAt": "2026-06-23T12:59:27.621Z",
+        "createdAt": "2026-06-22T20:18:54.718Z",
+        "id": "uEKnG6HAFdJTgchp",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "f382b871-ce56-4d98-bcf5-02825d8b61fe"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

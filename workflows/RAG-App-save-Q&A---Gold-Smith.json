@@ -1,0 +1,248 @@
+{
+  "updatedAt": "2026-07-02T17:16:10.755Z",
+  "createdAt": "2026-07-02T13:28:54.392Z",
+  "id": "0GtTX5wN5jkI5WC4",
+  "name": "RAG App save Q&A - Gold Smith",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1HfQuCcmfpjMNP9T-IddVMHPZ0dhLkLwT",
+          "mode": "list",
+          "cachedResultName": "Gold Smith",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1HfQuCcmfpjMNP9T-IddVMHPZ0dhLkLwT"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -32
+      ],
+      "id": "16027213-a42b-4455-82e6-7f26530c8c98",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "JWQH9D2LFySc5DFW",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -112,
+        -32
+      ],
+      "id": "6137cafe-e978-47d8-95cc-f31c324117d8",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "JWQH9D2LFySc5DFW",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "goldsmith",
+          "mode": "list",
+          "cachedResultName": "goldsmith"
+        },
+        "options": {
+          "pineconeNamespace": "G&S"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        -32
+      ],
+      "id": "0f4e7f3d-82ff-4030-b83c-541ebb34e355",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "bCRzJI1X1aVs9oRP",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "=openai/text-embedding-3-small",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        160
+      ],
+      "id": "1d3e93c0-ce6d-4e8f-abdd-3a8aad7a3094",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "binaryMode": "specificField",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        176
+      ],
+      "id": "190a11b7-dee7-4ee8-a362-a86edb04cf29",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 20,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        240,
+        352
+      ],
+      "id": "18b11c71-fd00-452d-b5c2-1b2d3f5f6845",
+      "name": "Recursive Character Text Splitter"
+    }
+  ],
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "59c6a3a6-3aeb-4de7-8325-a16195767edd",
+  "activeVersionId": null,
+  "versionCounter": 36,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-07-02T13:28:54.411Z",
+      "createdAt": "2026-07-02T13:28:54.411Z",
+      "role": "workflow:owner",
+      "workflowId": "0GtTX5wN5jkI5WC4",
+      "projectId": "uEKnG6HAFdJTgchp",
+      "project": {
+        "updatedAt": "2026-06-23T12:59:27.621Z",
+        "createdAt": "2026-06-22T20:18:54.718Z",
+        "id": "uEKnG6HAFdJTgchp",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "f382b871-ce56-4d98-bcf5-02825d8b61fe"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}
