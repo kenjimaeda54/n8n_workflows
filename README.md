@@ -11,6 +11,7 @@ Coleção de workflows prontos para uso no [n8n](https://n8n.io) — automaçõe
 
 - [Visão Geral](#visão-geral)
 - [Workflows](#workflows)
+  - [Controle Financeiro](#controle-financeiro)
   - [Telegram + AI Assistants](#telegram--ai-assistants)
   - [RAG & Knowledge Base](#rag--knowledge-base)
   - [Email Automation](#email-automation)
@@ -27,7 +28,7 @@ Coleção de workflows prontos para uso no [n8n](https://n8n.io) — automaçõe
 
 ## Visão Geral
 
-Este repositório reúne **25 workflows** criados para o n8n, cobrindo desde automações simples (webhooks, e-mail) até sistemas complexos com **agentes de IA**, **RAG (Retrieval-Augmented Generation)** e **MCP (Model Context Protocol)**.
+Este repositório reúne **27 workflows** criados para o n8n, cobrindo desde automações simples (webhooks, e-mail) até sistemas complexos com **agentes de IA**, **RAG (Retrieval-Augmented Generation)** e **MCP (Model Context Protocol)**.
 
 ### Principais Recursos
 
@@ -38,11 +39,83 @@ Este repositório reúne **25 workflows** criados para o n8n, cobrindo desde aut
 | **Telegram Bot** | Assistente completo com comandos, busca na web e sub-workflows |
 | **MCP** | Integração com Model Context Protocol (local e Claude Desktop) |
 | **Google Sheets** | Leitura e escrita de dados em planilhas |
+| **Controle Financeiro** | Gestão de cartão de crédito via Telegram + Google Sheets (texto e áudio) |
 | **Email** | Envio/recebimento de e-mails com agente inteligente |
 
 ---
 
 ## Workflows
+
+### Controle Financeiro
+
+| Workflow | Descrição | Nós |
+|----------|-----------|:---:|
+| `Finances Credit  WorkFlow.json` | Assistente de controle financeiro via Telegram — registra, edita e consulta gastos do cartão de crédito usando IA. Suporta mensagens de texto e áudio (transcrição automática). | 12 |
+| `Schedule finances.json` | Notificação automática a cada 3 horas — lê os dados do ciclo financeiro ativo no Google Sheets e envia um resumo formatado com barras de progresso via Telegram. | 5 |
+
+#### Estrutura da Google Sheets
+
+A planilha de controle financeiro (`controle_financeiro`) deve seguir a estrutura abaixo:
+
+**Abas por ciclo financeiro** (nome em inglês):
+- `September/October`, `October/November`, `November/December`, `December/January`, etc.
+
+**Colunas de cada aba de ciclo:**
+
+| GASTO | CATEGORIA | DATA | ID | LUGAR |
+|:-----:|:---------:|:----:|:--:|:-----:|
+| 250.00 | Alimentação | 2025-09-15 | 001 | iFood |
+| 1200.00 | Transporte | 2025-09-18 | 002 | Uber |
+
+> **Regra:** O campo `GASTO` deve conter apenas valores numéricos (sem `R$`, sem ponto como separador de milhar). Usar vírgula como separador decimal (ex: `223,00`). Isso facilita a consulta e soma pela IA.
+
+**Aba `Resume` (resumo geral):**
+
+| MES | LIMITE | GASTO ATUAL | VALOR RESTANTE |
+|:---:|:------:|:-----------:|:--------------:|
+| September/October | 5000.00 | =SUM('September/October'!A:A) | =B2-C2 |
+| October/November | 5000.00 | =SUM('October/November'!A:A) | =B3-C3 |
+
+> **Fórmulas obrigatórias na planilha:**
+> - `GASTO ATUAL`: `=SUM('NomeDaAba'!A:A)` — soma automática de todos os gastos do ciclo
+> - `VALOR RESTANTE`: `=LIMITE - GASTO ATUAL` — cálculo automático do saldo
+
+#### Funcionalidades do Assistente Financeiro
+
+| Funcionalidade | Exemplo de comando |
+|----------------|-------------------|
+| Registrar gasto | "Registra 85 reais no iFood categoria alimentação" |
+| Consultar gastos | "Quanto gastei esse mês?" |
+| Editar gasto | "Altera o valor do gasto 001 para 90 reais" |
+| Deletar gasto | "Apaga o gasto 002" |
+| Resumo por categoria | "Mostra o resumo por categoria" |
+| Via áudio | Enviar mensagem de voz com a instrução |
+
+#### Fluxo dos Workflows
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Finances Credit WorkFlow (sub-workflow)                │
+│                                                         │
+│  Telegram Trigger → Switch (texto/áudio)                │
+│       ├─ Texto → Edit Fields → AI Agent → Resposta      │
+│       └─ Áudio → Get File → Extract → Transcrição →     │
+│                    Edit Fields → AI Agent → Resposta     │
+│                                                         │
+│  AI Agent Tools:                                        │
+│  • tool_append_update_google_sheet (CRUD)               │
+│  • tool_delete_google_sheet                             │
+│  • tool_read_google_sheet (transações)                  │
+│  • tool_read_resume_google_sheet (resumo)               │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│  Schedule finances (notificação automática)             │
+│                                                         │
+│  Schedule (3h) → get cycle → get finances by month →    │
+│  get resume → transform data → send Telegram message    │
+└─────────────────────────────────────────────────────────┘
+```
 
 ### Telegram + AI Assistants
 
@@ -88,6 +161,8 @@ Este repositório reúne **25 workflows** criados para o n8n, cobrindo desde aut
 | Workflow | Descrição | Nós |
 |----------|-----------|:---:|
 | `Felling-Google-Sheets.json` | Registro de sentimentos em planilha Google | 5 |
+| `Finances Credit  WorkFlow.json` | Consulta/edição de dados financeiros em planilha | 12 |
+| `Schedule finances.json` | Leitura de planilha para notificação automática | 5 |
 
 ### Utilitários
 
@@ -120,6 +195,7 @@ Este repositório reúne **25 workflows** criados para o n8n, cobrindo desde aut
 | OpenAI | API Key da OpenAI |
 | Pinnecode | API Key do Pinnecode |
 | WhatsApp | Configuração do canal WhatsApp |
+| Controle Financeiro | Telegram Bot Token + Google Sheets OAuth2 + OpenAI API Key + OpenRouter Bearer Auth (para transcrição de áudio) |
 
 ### 3. Variáveis de Ambiente (n8n)
 
