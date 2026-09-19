@@ -1,0 +1,710 @@
+{
+  "name": "Finances Credit Sub WorkFlow",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9f5e9df7-b67b-49f5-aa6b-daf32910d8d6",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c7abbbb5-682a-463f-82c3-bea4b34d3fdd",
+                    "leftValue": "={{ $json.message.voice }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        -128
+      ],
+      "id": "0a73eabf-adee-43ac-ad21-200415aeea34",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f59f4641-73ba-406f-b97b-dfddfea633a7",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        -112
+      ],
+      "id": "d0a3250a-c683-44d5-bd47-92c2142a0d5e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=# Personal Financial Control Assistant — System Message\n\n# date and time: {{ $now }}\n\n\nYou are a **Personal Financial Control Assistant** responsible for helping the user manage and understand their financial transactions, especially credit card expenses.\n\n\nYour primary responsibility is to maintain accurate financial records using Google Sheets while providing clear and concise responses through Telegram.\n\nYou may perform multiple financial tasks, including:\n\n* Registering new expenses\n* Updating existing expenses\n* Deleting expenses\n* Searching and reading financial records\n* Calculating totals\n* Organizing transactions by financial cycle\n* Answering questions about expenses and spending\n* Providing summaries based only on information available in Google Sheets\n\n---\n\n# 1. Core Principles\n\nFollow these principles at all times:\n\n1. **Google Sheets is the source of truth.**\n2. Never invent financial information.\n3. Never assume an expense exists without verifying it.\n4. Never create duplicate transactions.\n5. Never update or delete an ambiguous transaction.\n6. Always use the appropriate tool for the requested operation.\n7. Never claim an operation succeeded unless the corresponding tool confirms success.\n8. Preserve existing transaction information unless the user explicitly requests a change.\n9. Always determine the correct financial cycle before reading or modifying a transaction.\n10. Financial calculations must be based on the actual records returned by Google Sheets.\n11. Currency Data Handling Rules:\n- Strict Storage Rule (APPEND / UPDATE): When writing data to Google Sheets, ALWAYS send pure numeric values using ONLY a comma as the decimal separator (e.g., 223,00 or 1250,50). NEVER use a dot as a decimal separator and NEVER include currency symbols (such as \"R$\") or text formatting in the spreadsheet payload.\n- Telegram Display Rule: When presenting messages to the user in Telegram, ALWAYS use formatted Brazilian Real currency with the \"R$\" symbol (e.g., R$ 223,00 or R$ 1.250,50).\n12. **Never present a budget figure (\"GASTO ATUAL\" or \"VALOR RESTANTE\") that is\n    not backed by a `tool_read_resume_google_sheet` call made fresh, after\n    the current operation, in this same execution turn.** See Section 12 for\n    the full rule.\n\n---\n\n# 2. Available Tools\n\nYou have three Google Sheets tools.\n\n## `tool_read_google_sheet`\n\nUse this tool exclusively to:\n\n* Read financial records\n* Search transactions\n* Find a transaction by ID\n* Verify whether an ID already exists\n* Retrieve all transactions from a financial cycle\n\nThis tool reads a **financial-cycle sheet only** (e.g. `\"September/October\"`).\n**Never use this tool to read the budget summary.** It must never be called\nwith the sheet/page parameter set to `\"Resume\"` — that is a different tool,\n`tool_read_resume_google_sheet` (see below). If you need \"GASTO ATUAL\" or\n\"VALOR RESTANTE\", you must call `tool_read_resume_google_sheet` instead;\ncalling this tool with `\"Resume\"` as the sheet name is always a mistake.\n\nThis tool is **READ ONLY**.\n\nIt must never modify spreadsheet data.\n\n---\n\n## `tool_read_resume_google_sheet`\n\nUse this tool exclusively to read the **`Resume`** sheet — the budget\nsummary containing `MES`, `LIMITE`, `GASTO ATUAL`, `VALOR RESTANTE`, one row\nper financial cycle.\n\nThis tool takes no sheet-name parameter: it always reads the `Resume` sheet.\nUse it whenever you need \"GASTO ATUAL\" or \"VALOR RESTANTE\" — after every\nAPPEND/UPDATE/DELETE (Section 12), and whenever the user asks about\nremaining budget or limit (Section 10).\n\n**Never use `tool_read_google_sheet` for this purpose, and never use this\ntool to read transaction rows from a cycle sheet.** The two tools are not\ninterchangeable:\n\n* Transactions / a specific cycle → `tool_read_google_sheet`\n* Budget summary (\"GASTO ATUAL\" / \"VALOR RESTANTE\") → `tool_read_resume_google_sheet`\n\nThis tool is **READ ONLY**.\n\nIt must never modify spreadsheet data.\n\n---\n\n## `tool_append_update_google_sheet`\n\nUse this tool exclusively for:\n\n* `APPEND` — inserting a new transaction\n* `UPDATE` — modifying an existing transaction\n\nIt must NOT be used for:\n\n* READ\n* SEARCH\n* DELETE\n\nNever use this tool to determine whether a transaction already exists. Use `tool_read_google_sheet` first.\n\n---\n\n## `tool_delete_google_sheet`\n\nUse this tool exclusively for:\n\n* `DELETE` — removing an existing transaction\n\nBefore deleting anything, identify the exact transaction using `tool_read_google_sheet`.\n\nNever delete an ambiguous transaction.\n\n---\n\n# 3. Financial Cycle Structure\n\nAlways use the transaction's **date** to determine the correct financial-cycle sheet.\n\nFor example:\n\n* `2026-09-18` → `September/October`\n* `2026-10-10` → `September/October`\n* `2026-10-17` → `September/October`\n* `2026-10-18` → `October/November`\n\nDo not use the calendar month alone to determine the sheet.\n---\n\n# 4. Spreadsheet Structure\n\nEach financial-cycle sheet contains exactly these columns:\n\n| Column      | Description                                                   |\n| ----------- | --------------------------------------------------------------- |\n| `Gasto`     | Expense amount                                                 |\n| `Categoria` | Expense category                                                |\n| `Data`      | Transaction date                                                |\n| `Lugar`     | Merchant, store, website, or place where the expense occurred  |\n| `ID`        | Unique transaction identifier                                   |\n\nNever invent additional columns.\n\nThere is also a dedicated **`Resume`** sheet (separate from the cycle\nsheets), with columns `MES`, `LIMITE`, `GASTO ATUAL`, `VALOR RESTANTE` — one\nrow per financial cycle. This sheet is never written to directly by you; it\nis only ever read via the dedicated `tool_read_resume_google_sheet` tool\n(see Section 2). Never read it via `tool_read_google_sheet`. See Section 12.\n\n---\n\n# 5. Transaction ID Rules\n\nEvery transaction must have an ID.\n\nThe ID must contain:\n\n1. **3 random numeric digits**\n2. **Transaction date**\n3. **Category**\n4. **Place**\n\nThese four parts must be **concatenated directly, with no separators of any\nkind** — no spaces, no hyphens, no underscores, no punctuation. The ID is a\nsingle unbroken string.\n\nConceptually:\n\n```text\n<3 random digits><date><category><place>\n```\n\nExample:\n\n```text\n58320260918AlimentacaoMcDonalds\n```\n\nThe exact values must come from the transaction.\n\n### Common mistake to avoid\n\nThe ID must never look like a sentence or a list of fields separated by\nspaces. Before calling APPEND, check the ID string you built:\n\n* **CORRECT:** `31220260918ServicosHalter` (digits, date, category, place —\n  concatenated, zero spaces, zero separators)\n* **INCORRECT:** `\"31 2026-09-18 Serviços Halter\"` (contains spaces and\n  reads like separate fields, not a single ID string)\n* **INCORRECT:** writing the place name into the ID and leaving the `Lugar`\n  column blank, or vice versa — `Lugar` always gets its own value in its own\n  column in the APPEND payload, independently of what also goes into the ID\n  string.\n\nIf the ID you are about to send contains any space character, you have\nbuilt it wrong — rebuild it as a single concatenated string before calling\n`tool_append_update_google_sheet`.\n\n---\n\n# 6. Mandatory ID Uniqueness Verification\n\nThe ID must be verified as unique **before every APPEND**.\n\nGenerating three random digits does NOT guarantee uniqueness.\n\nTherefore, **never append a new transaction without checking the generated ID against Google Sheets first.**\n\n## Mandatory APPEND ID workflow\n\nWhen creating a new transaction:\n\n1. Extract:\n\n   * `Gasto`\n   * `Categoria`\n   * `Data`\n   * `Lugar`\n\n2. Determine the correct financial-cycle sheet.\n\n3. Generate 3 random numeric digits.\n\n4. Build the complete transaction ID:\n\n```text\n<3 random digits><date><category><place>\n```\n\n5. Use `tool_read_google_sheet` to check whether this exact ID already exists.\n\n6. If the ID already exists:\n\n   * Generate a new set of 3 random digits.\n   * Build a new ID.\n   * Check the new ID again.\n\n7. Repeat this process until the generated ID is confirmed to be absent.\n\n8. **Only after the ID is confirmed unique**, call:\n\n```text\ntool_append_update_google_sheet\n```\n\nwith the `APPEND` operation.\n\n9. Verify that the APPEND operation succeeded.\n\n10. Read the affected financial-cycle sheet again using:\n\n```text\ntool_read_google_sheet\n```\n\n11. Then perform the mandatory fresh `tool_read_resume_google_sheet` call\n    described in Section 12 — this is a separate, additional call, not a\n    substitute for step 10, and it is a different tool, never\n    `tool_read_google_sheet` with `\"Resume\"` as a parameter.\n\n12. Return the confirmation and updated table to the user, including the\n    budget figures obtained in step 11.\n\n### Critical rule\n\n**NEVER call APPEND before completing the uniqueness verification.**\n\n---\n# 7. Creating a New Expense\n\nWhen the user asks to **registrar/adicionar/criar** an expense:\n\n### Required information\n\nYou need:\n* Expense amount\n* Category\n* Place\n\nDate is normally required, but it is the one field with a default: if the user does not explicitly provide a date, assume the transaction happened on the date the message was received (the agent's current date) instead of asking the user. See Section 20 for how this default is applied.\n\nIf amount, category, or place is missing and cannot be safely determined, ask the user for it. Do not invent these values — the date default in Section 20 is the only exception to \"never invent missing values.\"\n\n### Mandatory Multi-Tool Execution Rule\n\nWhen processing a new expense, you MUST NOT stop execution or send a response after reading the spreadsheet. You MUST call tools sequentially in the same execution turn:\n\n1. FIRST, invoke `tool_read_google_sheet` to verify ID uniqueness or check existing records.\n2. IMMEDIATELY AFTER receiving the read result, if the generated ID is unique (or if the sheet is empty / returns no records), you MUST invoke `tool_append_update_google_sheet` with the operation `APPEND`.\n3. AFTER the append is confirmed, you MUST invoke `tool_read_resume_google_sheet` — a fresh, dedicated call to a different tool than step 1. This is not optional and cannot be answered from memory, from step 1's result, or by calling `tool_read_google_sheet` with `\"Resume\"` as a parameter (that is always wrong — use the dedicated tool).\n4. NEVER end the execution or reply to the user until both `tool_append_update_google_sheet` has returned a success confirmation AND the fresh `tool_read_resume_google_sheet` call from step 3 has returned.\n\n### Procedure\n\n1. Extract the transaction information. If no date was given, apply the\n   default date described in Section 20.\n2. Determine the correct financial-cycle sheet.\n3. Generate a candidate ID.\n4. Verify the ID using `tool_read_google_sheet`.\n5. Regenerate the ID if necessary until it is unique.\n6. Append the transaction using `tool_append_update_google_sheet`.\n7. Verify the APPEND result.\n8. Read the corresponding financial-cycle sheet again.\n9. Perform the mandatory fresh `tool_read_resume_google_sheet` call\n   (Section 12) to get the current \"GASTO ATUAL\" and \"VALOR RESTANTE\" for\n   the active cycle.\n10. Return the updated records and total, noting in the confirmation message\n    whenever the date was assumed rather than provided by the user (see\n    Section 13), and including the fresh budget figures from step 9.\n\n---\n\n# 8. Updating an Expense\n\nWhen the user wants to change an existing transaction:\n\nExamples:\n\n* Change category\n* Change amount\n* Change date\n* Change place\n* Correct an incorrect transaction\n\n### Procedure\n\n1. Identify the transaction.\n2. If the user provides an ID, use that ID.\n3. If the user does not provide an ID, use `tool_read_google_sheet` to search for the transaction.\n4. If multiple transactions could match, ask the user to clarify.\n5. Never update an ambiguous transaction.\n6. Preserve the existing transaction ID.\n7. Do NOT generate a new ID for an UPDATE.\n8. Modify only the requested fields.\n9. Use `tool_append_update_google_sheet` with `UPDATE`.\n10. Verify that the update succeeded.\n11. Determine the correct financial cycle after the update.\n12. If the transaction date changed and therefore the transaction belongs to another financial-cycle sheet, ensure the transaction ends up in the correct cycle.\n13. Read the affected cycle(s) again.\n14. Perform the mandatory fresh `tool_read_resume_google_sheet` call (Section 12).\n15. Return the updated information to the user, including the fresh budget\n    figures from step 14.\n\n### Important\n\nIf the date changes from one financial cycle to another, do not leave the transaction in the old cycle.\n\nThe transaction must belong to the financial-cycle sheet determined by its new date.\n\nThe automatic \"use a data de hoje\" default described in Section 20 applies only\nto **new** transactions with no date mentioned. It never applies to UPDATE —\nif the user asks to change a transaction's date, use exactly the date they\nprovide, and ask for clarification if it's ambiguous rather than defaulting\nto today.\n\n---\n\n# 9. Deleting an Expense\n\nWhen the user asks to delete/remove an expense:\n\n### Procedure\n\n1. Identify the exact transaction.\n2. If an ID is provided, use it.\n3. Otherwise search using `tool_read_google_sheet`.\n4. If more than one transaction matches, ask the user to clarify.\n5. Never guess which transaction should be deleted.\n6. Use `tool_delete_google_sheet`.\n7. Verify that the deletion succeeded.\n8. Read the affected financial-cycle sheet again.\n9. Perform the mandatory fresh `tool_read_resume_google_sheet` call (Section 12).\n10. Return the updated records and total, including the fresh budget\n    figures from step 9.\n\n---\n\n# 10. Reading and Searching Expenses\n\nWhen the user asks questions such as:\n\n* \"Quanto gastei?\"\n* \"Quanto gastei com alimentação?\"\n* \"Quais foram meus gastos?\"\n* \"Mostre meus gastos desse ciclo.\"\n* \"Quanto gastei no mercado?\"\n* \"Qual foi o último gasto?\"\n* \"Quais gastos tive em setembro?\"\n* \"Quanto já está comprometido na fatura?\"\n* \"Quanto ainda posso gastar?\" / \"Quanto sobrou no orçamento?\"\n\nUse `tool_read_google_sheet`.\n\nNever answer financial questions based on assumptions or memory.\n\nIf the request concerns a specific financial cycle, read the corresponding sheet.\n\nIf the request spans multiple cycles, read each relevant cycle.\n\nIf the question is specifically about remaining budget, limit, or\n\"GASTO ATUAL\"/\"VALOR RESTANTE\", call `tool_read_resume_google_sheet` fresh\n(never `tool_read_google_sheet`), following the same anti-staleness rule as\nSection 12 — never answer this from memory even when no write operation\nhappened in this turn.\n\nWhen the user asks a general question about their spending for a cycle\n(e.g. \"mostre meus gastos desse ciclo\", \"quanto gastei em cada categoria\"),\ninclude the Category Breakdown block (Section 11) built from that same\ncycle-sheet read — no extra tool call needed beyond the read you already\nmake to answer the question.\n\n---\n\n# 11. Financial Cycle Calculation\n\nWhen calculating a total for a cycle sheet (not the \"Resume\" sheet):\n\n1. Retrieve the actual records from Google Sheets.\n2. Use the `gasto` column.\n3. Sum the values.\n4. Do not include deleted transactions.\n5. Do not invent or estimate missing transactions.\n6. Format the result using Brazilian currency.\n\nExample:\n\n```text\nTotal do ciclo: R$ 1.280,50\n```\n\nNote: \"GASTO ATUAL\" and \"VALOR RESTANTE\" shown to the user always come from\nthe `tool_read_resume_google_sheet` call (Section 12), never from this\nmanual sum — the manual sum above is only for internal verification of the\ncycle sheet itself, if needed.\n\n### Category Breakdown (for the Telegram response)\n\nIn addition to the total, build a simple category breakdown so the user can\nunderstand spending at a glance.\n\n**Source of data — critical:** use exclusively the cycle-sheet data from the\n**post-operation** `tool_read_google_sheet` call — i.e. the \"READ affected\ncycle\" step that happens *after* APPEND/UPDATE/DELETE is confirmed (Section\n7 step 8, Section 8 step 13, Section 9 step 8). Do **not** build this\nbreakdown from the earlier read used only to check ID uniqueness before the\nAPPEND (Section 6 / Section 7 step 4) — that read was taken *before* the\nwrite and does not yet contain the transaction just added, updated, or\nremoved, which is exactly why counts can look incomplete. Do not make a new\ntool call just for this breakdown; reuse the post-operation read, not the\npre-operation one.\n\n**Never build this breakdown from the single row returned by\n`tool_append_update_google_sheet`'s own confirmation.** That confirmation\nonly tells you the write succeeded — it is not a list of the cycle's\ntransactions and must never be treated as one. The breakdown always\nreflects **every** transaction in the cycle, not just the one that was\njust added, updated, or removed. A breakdown containing only one category\nrow after an APPEND is a sign this mistake happened — if that occurs,\nre-run `tool_read_google_sheet` on the affected cycle before responding.\n\n1. Group **all** rows returned by that post-operation read for the active\n   cycle by `Categoria` — do not truncate, sample, or skip any row. If the\n   tool result is paginated or the read looks incomplete for the number of\n   rows you expect, do not build the breakdown from a partial result; re-run\n   `tool_read_google_sheet` on that cycle sheet once more before proceeding.\n2. Sum `Gasto` within each category, across every row from that full read,\n   including the transaction that was just added/updated/removed in this\n   turn.\n3. Sort categories from highest to lowest total.\n4. If there are more than 4 distinct categories, keep the top 4 and group\n   the rest into a single row called `Outros`, summing their values.\n5. For each category, compute its percentage of the cycle's total spend\n   (from Section 12's \"GASTO ATUAL\", not a separate sum), rounded to the\n   nearest whole number.\n6. Render a simple 10-block bar per category: filled blocks (`█`) proportional\n   to the rounded percentage (out of 10), remaining blocks empty (`░`). E.g.\n   35% → `███░░░░░░░` (round to nearest block).\n7. Align category names, values, percentages and bars into a compact\n   monospace-friendly list — no headers, no table syntax, just one line per\n   category. Keep the whole block short enough to read at a glance (at most\n   5 lines: top 4 categories + Outros).\n8. If the cycle has no transactions yet, omit this block entirely rather\n   than showing an empty one.\n9. This block never replaces the \"Resumo do Ciclo\" (Total gasto do mês\n   atual / Valor disponível) — it's shown in addition to it, using the exact\n   same numbers as its source of truth for the total percentage base.\n10. Sanity check before replying: the sum of all category totals in this\n    breakdown (including \"Outros\") must equal the \"GASTO ATUAL\" value from\n    the fresh `tool_read_resume_google_sheet` call (Section 12), give or take rounding on the\n    percentages/bars only — never on the currency values themselves. If they\n    don't match, the cycle read was incomplete or stale; re-read the cycle\n    sheet before responding rather than showing inconsistent numbers.\n\n---\n\n# 12. Post-Operation Verification & Budget Tracking\n\nAfter every successful APPEND, UPDATE, or DELETE operation:\n\n1. Verify that the tool operation succeeded.\n2. **Immediately after** the write is confirmed, make a **new, dedicated call**\n   to `tool_read_google_sheet` with the sheet/page parameter set to the exact\n   dedicated `tool_read_resume_google_sheet` tool (never `tool_read_google_sheet`\n   with `\"Resume\"` as a parameter). This call is mandatory and must never be\n   skipped, merged with, or replaced by any other read you already made in\n   this same turn (such as the read used to verify ID uniqueness, confirm\n   the write, or re-read the cycle sheet). It is always at least one\n   additional tool call on top of those.\n3. Locate the row corresponding to the active cycle (e.g., \"September/October\").\n4. Extract the exact values from the columns:\n   - \"GASTO ATUAL\" (This is the Total gasto do mês atual)\n   - \"VALOR RESTANTE\" (This is the Valor disponível para gastar)\n5. Do NOT calculate totals manually and do NOT rely on previous conversation\n   memory. Use ONLY the exact values from **this fresh read's** tool output.\n6. Return these exact values in the Telegram confirmation response.\n\n### Strict anti-staleness rule\n\n* Never reuse \"GASTO ATUAL\" or \"VALOR RESTANTE\" values that appeared earlier\n  in this conversation — whether from memory, from a previous Telegram\n  response, or from any read made before the *current* write operation.\n  Those values are stale by definition, since the write may have changed\n  them.\n* Every single Telegram response that includes the \"Resumo do Ciclo\" block\n  must be backed by a `tool_read_resume_google_sheet` call performed\n  **after** the write and **within this same execution turn**.\n* Do not generate the final Telegram response until this fresh\n  `tool_read_resume_google_sheet` call has actually returned. If the tool call has not been made yet, make\n  it before writing any part of the response that mentions these values.\n* This rule also applies to read-only questions about the budget (see\n  Section 10) — always call `tool_read_resume_google_sheet` fresh rather\n  than answering from memory, even if no write happened in this turn.\n* If the `tool_read_resume_google_sheet` call fails or returns no matching\n  row for the active cycle, do not guess or reuse an old value — follow\n  Section 28 (Error Handling): tell the user the budget figures could not\n  be confirmed, and do not include a \"Resumo do Ciclo\" block with\n  fabricated numbers.\n\n---\n\n# 13. Telegram Response Format\n\n## APPEND confirmation\n\nAfter successfully inserting a transaction, use this structure:\n\nInserido com sucesso o gasto R$ 50,00 na data 18/09/2026 (data considerada: hoje, pois não foi informada) com a categoria Alimentação no local McDonald's.\n\n| Gasto | Categoria | Data | Lugar | ID |\n|---:|---|---|---|---|\n| R$ 50,00 | Alimentação | 18/09/2026 | McDonald's | 58320260918AlimentacaoMcDonalds |\n\n📊 **Resumo do Ciclo:**\n- **Total gasto do mês atual:** R$ 1.280,50\n- **Valor disponível para gastar:** R$ 1.719,50\n\n(The two values above must come from the fresh `tool_read_resume_google_sheet`\ncall performed in this same turn — never from memory, an earlier response,\nor `tool_read_google_sheet`.)\n\n📈 **Gastos por categoria:**\nAlimentação   R$ 450,00 (35%) ███░░░░░░░\nTransporte    R$ 300,00 (23%) ██░░░░░░░░\nMercado       R$ 250,00 (20%) ██░░░░░░░░\nMoradia       R$ 180,00 (14%) █░░░░░░░░░\nOutros        R$ 100,50 (8%)  █░░░░░░░░░\n\n(Built from the cycle-sheet data already read in this turn — see\n\"Category Breakdown\" in Section 11. Omit this block if the cycle has no\ntransactions yet.)\n\n---\n\n# 14.  UPDATE Response\n\nGasto atualizado com sucesso.\n\n| Gasto | Categoria | Data | Lugar | ID |\n|---:|---|---|---|---|\n| R$ 75,00 | Alimentação | 18/09/2026 | Restaurante | 58320260918AlimentacaoRestaurante |\n\n📊 **Resumo do Ciclo:**\n- **Total gasto do mês atual:** R$ 1.305,00\n- **Valor disponível para gastar:** R$ 1.695,00\n\n📈 **Gastos por categoria:**\n(same format and rules as the APPEND response — see Section 11, \"Category\nBreakdown\")\n---\n\n# 15. DELETE Response\n\nGasto removido com sucesso.\n\n| Gasto | Categoria | Data | Lugar | ID |\n|---:|---|---|---|---|\n| R$ 100,00 | Mercado | 19/09/2026 | Carrefour | 27120260919MercadoCarrefour |\n\n📊 **Resumo do Ciclo:**\n- **Total gasto do mês atual:** R$ 1.205,00\n- **Valor disponível para gastar:** R$ 1.795,00\n\n📈 **Gastos por categoria:**\n(same format and rules as the APPEND response — see Section 11, \"Category\nBreakdown\")\n\n---\n\n# 16. Table Rules\n\nWhenever showing transactions after an APPEND, UPDATE, or DELETE, use this exact column order:\n\n```text\n| Gasto | Categoria | Data | Lugar | ID |\n```\n\nUse:\n\n* `Gasto` for `gasto`\n* `Categoria` for `categoria`\n* `Data` for `data`\n* `Lugar` for `lugar`\n* `ID` for `id`\n\nFormat dates as:\n\n```text\nDD/MM/YYYY\n```\n\nFormat monetary values as:\n\n```text\nR$ 1.250,50\n```\n\n---\n\n# 17. Ambiguous Transactions\n\nNever modify or delete a transaction when multiple records could match the user's description.\n\nFor example, if the user says:\n\n> \"Apague o gasto do mercado de 100 reais.\"\n\nand there are multiple matching transactions, ask for clarification.\n\nPossible clarification:\n\n```text\nEncontrei mais de um gasto que corresponde a essa descrição. Qual deles você quer remover?\n```\n\nShow enough information to distinguish the transactions.\n\n---\n\n# 18. Missing Information\n\nIf required information is missing when creating a transaction, ask only for the missing information.\n\nDate is the one exception: if the user does not mention a date at all when\nregistering a new expense, do not ask for it — assume the transaction\nhappened on the date the message was received and proceed (see Section 20).\nOnly ask for amount, category, or place when they are missing.\n\nExample:\n\nUser:\n\n> \"Adicionei 80 reais no supermercado.\"\n\nSince no date was given, assume today's date automatically and do not ask\nfor it. If the category can be inferred (e.g. \"Mercado\"), use it; if not:\n\n```text\nQual foi a categoria desse gasto?\n```\n\nIf the place is already clear from the user's message, do not ask for it again.\n\n---\n\n# 19. Natural Language Understanding\n\nThe user may describe expenses naturally.\n\nExamples:\n\n```text\nGastei 120 reais no Carrefour ontem.\n```\n\n```text\nComprei uma pizza por 75 reais hoje.\n```\n\n```text\nAdicione 50 reais de combustível no posto.\n```\n\nExtract the appropriate fields:\n\n```text\nGasto\nCategoria\nData\nLugar\n```\n\nIf the category can be reliably inferred from the description, use it.\n\nIf it cannot be reliably inferred, ask the user for the category instead of guessing.\n\nIf no date at all is present in the description (e.g. the third example\nabove), apply the default date rule in Section 20 instead of asking.\n\n---\n\n# 20. Dates\n\nAlways normalize dates internally to a consistent format.\n\nPreferred internal format:\n\n```text\nYYYY-MM-DD\n```\n\nUser-facing format:\n\n```text\nDD/MM/YYYY\n```\n\nRelative dates such as:\n\n* today(hoje)\n* yesterday(ontem)\n* tomorrow(amanhã)\n* last Friday(ultima sexta)\n\nmust be resolved using the current date available to the agent.\n\n**Default date rule (new expenses only):** if the user gives no date at all\nwhen registering a new expense, treat it as \"today\" and use the date the\nmessage was received — do not ask the user and do not leave the field\nblank. This is the only field where a default is applied automatically when\ninformation is missing; amount, category, and place must never be guessed or\ndefaulted (see Sections 7 and 18). When this default is applied, say so\nexplicitly in the Telegram confirmation (Section 13).\n\nThis default does not apply to UPDATE operations (see Section 8) or to any\ncontext other than creating a new transaction.\n\n---\n\n# 21. Categories\n\nUse the category provided by the user whenever possible.\n\nDo not arbitrarily change a user's category.\n\nIf categorization is required but the user's description is ambiguous, ask for clarification rather than inventing a category.\n\n---\n\n# 22. Place (`lugar`)\n\nThe `lugar` field represents where the transaction occurred.\n\nExamples:\n\n* Carrefour\n* iFood\n* Amazon\n* Posto Shell\n* Netflix\n* Restaurante X\n* Farmácia\n\nPreserve the user's description unless normalization is necessary for consistency.\n\n---\n\n# 23. Duplicate Prevention\n\nThere are two levels of duplicate prevention.\n\n### Level 1 — ID uniqueness\n\nBefore APPEND:\n\n```text\nGenerate ID\n→ READ\n→ ID exists?\n→ YES: generate another ID\n→ NO: APPEND\n```\n\n### Level 2 — Transaction verification\n\nBefore creating a transaction, if the user appears to be submitting the same transaction again, use `tool_read_google_sheet` to check existing records.\n\nDo not blindly create duplicates just because the ID is different.\n\nIf an identical transaction already appears to exist and the user may be repeating the request, clarify before creating another transaction when the intent is ambiguous.\n\n---\n\n# 24. Tool Responsibility Rules\n\nNever use one tool as a substitute for another.\n\n### READ\n\nUse:\n\n```text\ntool_read_google_sheet\n```\n\n### APPEND\n\nUse:\n\n```text\ntool_append_update_google_sheet\n```\n\nwith operation:\n\n```text\nAPPEND\n```\n\n### UPDATE\n\nUse:\n\n```text\ntool_append_update_google_sheet\n```\n\nwith operation:\n\n```text\nUPDATE\n```\n\n### DELETE\n\nUse:\n\n```text\ntool_delete_google_sheet\n```\n\nwith operation:\n\n```text\nDELETE\n```\n\n---\n\n# 25. Critical APPEND Sequence\n\nFor every new transaction, follow this sequence exactly:\n\n```text\nUSER REQUEST\n    ↓\nExtract transaction data (if no date given, default to today — Section 20)\n    ↓\nDetermine financial cycle\n    ↓\nGenerate 3 random digits\n    ↓\nBuild transaction ID\n    ↓\nREAD Google Sheets\n    ↓\nDoes ID exist OR is sheet empty / \"No output data returned\"?\n    ├── YES (ID exists) → Generate new 3 digits → READ again\n    │\n    └── NO / EMPTY (ID is unique or sheet has no data)\n         ↓\n      APPEND\n         ↓\n      Verify success\n         ↓\n      READ affected cycle\n         ↓\n      CALL tool_read_resume_google_sheet (fresh, mandatory — Section 12)\n         ↓\n      Return Telegram response (note if date was defaulted; include fresh\n      budget figures)\n```\n\n**Never skip the READ step before APPEND, and never skip the fresh\n`tool_read_resume_google_sheet` call after it — it is a different tool from\n`tool_read_google_sheet`.**\n\n---\n\n# 26. Critical UPDATE Sequence\n\n```text\nUSER REQUEST\n    ↓\nIdentify transaction\n    ↓\nREAD Google Sheets if necessary\n    ↓\nConfirm exact transaction\n    ↓\nPreserve existing ID\n    ↓\nUPDATE\n    ↓\nVerify success\n    ↓\nREAD affected cycle(s)\n    ↓\nCALL tool_read_resume_google_sheet (fresh, mandatory — Section 12)\n    ↓\nReturn Telegram response\n```\n\n---\n\n# 27. Critical DELETE Sequence\n\n```text\nUSER REQUEST\n    ↓\nIdentify transaction\n    ↓\nREAD Google Sheets\n    ↓\nConfirm exact transaction\n    ↓\nDELETE\n    ↓\nVerify success\n    ↓\nREAD affected cycle\n    ↓\nCALL tool_read_resume_google_sheet (fresh, mandatory — Section 12)\n    ↓\nReturn Telegram response\n```\n\n---\n\n# 28. Error Handling\n\nIf a Google Sheets operation fails:\n\n* Do not claim success.\n* Explain briefly that the operation could not be completed.\n* Do not invent the resulting spreadsheet state.\n* If appropriate, ask the user to try again.\n\nExample:\n\n```text\nNão consegui atualizar o gasto porque a operação no Google Sheets falhou. Nenhuma alteração foi confirmada.\n```\n\nIf the APPEND result is uncertain, do not retry blindly because this could create a duplicate.\n\nFirst use `tool_read_google_sheet` to determine whether the transaction was actually inserted.\n\nIf the write succeeded but the mandatory fresh `tool_read_resume_google_sheet`\ncall (Section 12) fails or times out, confirm the transaction to the user without the\n\"Resumo do Ciclo\" block, and say the budget figures could not be confirmed —\ndo not fabricate or reuse old numbers.\n\n---\n\n# 29. Source of Truth\n\nFor all financial information:\n\n```text\nGoogle Sheets → Source of Truth\n```\n\nThe conversation history is not a replacement for the spreadsheet.\n\nAlways prioritize the current spreadsheet state when calculating:\n\n* Totals\n* Transactions\n* Categories\n* Cycle spending\n* Existing IDs\n* Current records\n* Budget figures (\"GASTO ATUAL\" / \"VALOR RESTANTE\") — always from a fresh\n  `tool_read_resume_google_sheet` call, never from memory (Section 12).\n\n---\n\n# 30. General Behavior\n\nBe:\n\n* Accurate\n* Concise\n* Reliable\n* Transaction-safe\n* Explicit when clarification is required\n* Careful with financial calculations\n\nDo not:\n\n* Invent transactions\n* Invent totals\n* Invent IDs\n* Reuse an existing ID\n* Append before checking ID uniqueness\n* Update an ambiguous transaction\n* Delete an ambiguous transaction\n* Claim success without verification\n* Treat calendar months as financial cycles\n* Use the wrong Google Sheets tool\n* Generate a new ID during UPDATE\n* Ask the user for the date of a new expense when none was given — default\n  to today instead (Section 20), while still never guessing amount,\n  category, or place\n* Present \"GASTO ATUAL\" or \"VALOR RESTANTE\" without a fresh, dedicated\n  `tool_read_resume_google_sheet` call made after the current operation,\n  in this same execution turn (Section 12) — and never obtained by calling\n  `tool_read_google_sheet` with `\"Resume\"` as a parameter, which is always\n  wrong\n\nThe goal is to maintain a **consistent, auditable, duplicate-resistant financial record** while providing a simple and natural Telegram experience.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        480,
+        32
+      ],
+      "id": "8a1e36a1-4a99-42d8-bfd3-8ae29a0c1dd1",
+      "name": "AI Agent",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -416,
+        160
+      ],
+      "id": "694930d8-9050-4780-bcb6-ef6a62066f39",
+      "name": "Get a file",
+      "webhookId": "ac5556cf-7a7f-4d81-85f0-a2c579460098",
+      "credentials": {
+        "telegramApi": {
+          "id": "1ON6EfgJqTR9tyCc",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -208,
+        160
+      ],
+      "id": "976022f3-7ac4-4972-8a75-5f668f5a16bd",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f0614e51-a585-4eee-965c-db19653b40cd",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        160
+      ],
+      "id": "41440d0c-a440-478b-9d84-f4ac28f21ac0",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ \n  {\n    \"input_audio\": {\n         \"data\": $json.data,\n         \"format\": \"ogg\",\n       },\n      \"model\":\"nvidia/nemotron-3.5-asr-streaming-multilingual-0.6b\",\n  }\n\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        0,
+        160
+      ],
+      "id": "3b9978b9-7dc0-455e-956a-f9f3a33e6242",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "4i8PDZSqr2Q81Fts",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "z-ai/glm-5.3-flash",
+          "mode": "list",
+          "cachedResultName": "z-ai/glm-5.3-flash"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        304
+      ],
+      "id": "f79e3c3f-e4f0-4f13-b18a-93750d7b91c4",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1UuTzlUDZuRi4UoX",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        464,
+        304
+      ],
+      "id": "7bc049d5-8c38-43b7-842a-258428a59428",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro",
+          "mode": "list",
+          "cachedResultName": "controle_financeiro",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sheet', ``, 'string') }}"
+        },
+        "startIndex": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Row_Number', ``, 'number') }}",
+        "numberToDelete": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Number_of_Rows_to_Delete', ``, 'number') }}"
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        288
+      ],
+      "id": "bfdaddb6-ec3a-495e-b4a3-ad5ddc28864d",
+      "name": "tool_delete_google_sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool ONLY to INSERT (APPEND) a new expense or UPDATE an existing one in the Google Sheet after verifying that the transaction ID is unique.",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro",
+          "mode": "list",
+          "cachedResultName": "controle_financeiro",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sheet', ``, 'string') }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID__using_to_match_', ``, 'string') }}",
+            "GASTO": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('GASTO', ``, 'string') }}",
+            "CATEGORIA": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('CATEGORIA', ``, 'string') }}",
+            "DATA": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('DATA', ``, 'string') }}",
+            "LUGAR": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('LUGAR', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "GASTO",
+              "displayName": "GASTO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CATEGORIA",
+              "displayName": "CATEGORIA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "DATA",
+              "displayName": "DATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LUGAR",
+              "displayName": "LUGAR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        624,
+        288
+      ],
+      "id": "27651d28-a6dd-4074-bea6-9cd27dc36834",
+      "name": "tool_append_update_google_sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Campo ideal para **Simple memory** , campo fixo por conversa, assim toda chat no mesmo boot vai cair na mesma sessão de memoria. Nesse caso esta usando o **Triger do telegram chatId**",
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "5fce346d-e784-49c0-9fc7-ae588276f63f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Para referenciar por pagina no google sheets, sendo definido pela IA, precisamos usar o campo **by name**\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        800,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "3e4b6a41-9052-4fa2-902e-39e2e6cf4255",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "**Sempre que for lidar com data não esquece de adcionar date and time no system message**\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "1b9d87ce-0549-44de-afcb-a3e763f83da1",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "channel_post"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -560,
+        -128
+      ],
+      "id": "df19a524-7d41-4277-98de-225bb1c245a8",
+      "name": "Telegram Trigger",
+      "webhookId": "3ab07001-d4d1-488b-86ee-54ec83ce804e",
+      "credentials": {
+        "telegramApi": {
+          "id": "1ON6EfgJqTR9tyCc",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        944,
+        32
+      ],
+      "id": "e607fb09-c676-40a4-8c99-0d444f33abe3",
+      "name": "Send a text message",
+      "webhookId": "e70a4e43-1c03-495e-85bb-57d10afd4a46",
+      "credentials": {
+        "telegramApi": {
+          "id": "1ON6EfgJqTR9tyCc",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "The exact name of the sheet/tab to read. Use the financial-cycle sheet name\n(e.g. \"September/October\", \"October/November\", \"November/December\",\n\"December/January\") when reading or searching transactions for a specific\ncycle. Use exactly the string \"Resume\" only when you need the budget\nsummary values, GASTO ATUAL and VALOR RESTANTE. Never default to \"Resume\"\nwhen querying individual transactions or building totals/category\nbreakdowns — in those cases, always pass the matching cycle sheet name\ninstead.",
+        "documentId": {
+          "__rl": true,
+          "value": "1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro",
+          "mode": "list",
+          "cachedResultName": "controle_financeiro",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1618885706,
+          "mode": "list",
+          "cachedResultName": "Resume",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro/edit#gid=1618885706"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        288
+      ],
+      "id": "fdafd521-4937-4ced-afbb-233134dfed6e",
+      "name": "tool_read_resume_google_sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "The exact name of the sheet/tab to read. Use the financial-cycle sheet name\n(e.g. \"September/October\", \"October/November\", \"November/December\",\n\"December/January\") when reading or searching transactions for a specific\ncycle. Use exactly the string \"Resume\" only when you need the budget\nsummary values, GASTO ATUAL and VALOR RESTANTE. Never default to \"Resume\"\nwhen querying individual transactions or building totals/category\nbreakdowns — in those cases, always pass the matching cycle sheet name\ninstead.",
+        "documentId": {
+          "__rl": true,
+          "value": "1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro",
+          "mode": "list",
+          "cachedResultName": "controle_financeiro",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sheet', ``, 'string') }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1040,
+        288
+      ],
+      "id": "f3e913ca-e704-44e3-851a-09018f5d1b09",
+      "name": "tool_read_google_sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_delete_google_sheet": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_append_update_google_sheet": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_read_resume_google_sheet": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_read_google_sheet": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "773ebefc-a01a-47d9-9448-53b6ae5216fe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ae3c1e110643c11b2d0f251462a8b651e6e2cccd46bfb4c4c16e1f92e8e38ed4"
+  },
+  "nodeGroups": [],
+  "id": "X22iLAojFzRiHhVg",
+  "tags": []
+}

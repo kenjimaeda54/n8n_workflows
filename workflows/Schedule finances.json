@@ -1,0 +1,214 @@
+{
+  "name": "Schedule finances",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -928,
+        0
+      ],
+      "id": "d5ade849-c1cf-4c8a-b39c-a20d5d03a316",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst currentDay = now.getDate();\nconst currentMonth = now.getMonth();\n\nconst monthNames = [\n  \"January\", \"February\", \"March\", \"April\", \"May\", \"June\",\n  \"July\", \"August\", \"September\", \"October\", \"November\", \"December\"\n];\n\nlet startMonthIndex = (currentDay >= 18) ? currentMonth : (currentMonth - 1 + 12) % 12;\nlet endMonthIndex = (startMonthIndex + 1) % 12;\n\nconst activeCycle = `${monthNames[startMonthIndex]}/${monthNames[endMonthIndex]}`;\n\nreturn [{\n  json: {\n    activeCycle: activeCycle\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        0
+      ],
+      "id": "4471c31e-e560-46b3-8999-cb03d66511f7",
+      "name": "get cycle"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro",
+          "mode": "list",
+          "cachedResultName": "controle_financeiro",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $json.activeCycle }}"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        0
+      ],
+      "id": "f3636174-2a0f-40eb-af8e-d9ee1a2e8cb1",
+      "name": "get finances by month",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro",
+          "mode": "list",
+          "cachedResultName": "controle_financeiro",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1618885706,
+          "mode": "list",
+          "cachedResultName": "Resume",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yJYEDxQgOzr5uB9L_ww696kL_KPFQIJSqqJ1qg9l1Ro/edit#gid=1618885706"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "39841712-b4d0-4170-921d-094595a1afd7",
+      "name": "get resume",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3fbx220VWJfBU9JV",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const activeCycle = $('get cycle').first().json.activeCycle\nconst resumeData = $('get resume').all().map(item => item.json)\nconst currentCycleData = resumeData.find(item => item.MES === activeCycle)\n\nif (!currentCycleData) {\n  return [{\n    json: {\n      mensagem: `⚠️ **Finance Notification**\\n\\nCould not find the active cycle (**${activeCycle}**) in the 'Resume' sheet.`\n    }\n  }]\n}\n\nconst formatBRL = (value) =>\n  Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })\n\nconst transactions = $('get finances by month').all().map(item => item.json)\n\nconst totals = {};\nfor (const t of transactions) {\n  const cat = t.Categoria || t.CATEGORIA || 'Sem categoria';\n  const val = Number(t.Gasto || t.GASTO || 0);\n  totals[cat] = (totals[cat] || 0) + val;\n}\n\nlet sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);\n\nlet breakdownRows;\nif (sorted.length > 4) {\n  const top4 = sorted.slice(0, 4);\n  const rest = sorted.slice(4);\n  const outrosTotal = rest.reduce((sum, [, v]) => sum + v, 0);\n  breakdownRows = [...top4, ['Outros', outrosTotal]];\n} else {\n  breakdownRows = sorted;\n}\n\nconst totalExpanse = Number(currentCycleData[\"GASTO ATUAL\"]);\n\nconst barFor = (value) => {\n  const pct = totalExpanse > 0 ? Math.round((value / totalExpanse) * 100) : 0;\n  const blocks = totalExpanse > 0 ? Math.round((value / totalExpanse) * 10) : 0;\n  const bar = '█'.repeat(blocks) + '░'.repeat(10 - blocks);\n  return { pct, bar };\n};\n\nconst breakdownText = breakdownRows.length\n  ? breakdownRows.map((row) => {\n      const cat = String(row[0]);\n      const val = Number(row[1]);\n      const { pct, bar } = barFor(val);\n      return `${cat.padEnd(14)} ${formatBRL(val).padStart(12)} (${pct}%) ${bar}`;\n    }).join('\\n')\n  : null\n\n\nlet formattedMessage = `📊 **Resumo do Ciclo (${activeCycle}):**\n- **Total gasto no mês:** ${formatBRL(currentCycleData[\"GASTO ATUAL\"])}\n- **Valor disponível para gastar:** ${formatBRL(currentCycleData[\"VALOR RESTANTE\"])}`;\n\nif (breakdownText) {\n  formattedMessage += `\\n\\n📈 **Gastos por categoria:**\\n\\`\\`\\`\\n${breakdownText}\\n\\`\\`\\``;\n}\n\nreturn [{ json: { mensagem: formattedMessage } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        0
+      ],
+      "id": "e201e664-81c9-4614-bd09-e0824ae242f8",
+      "name": "transform data for output"
+    },
+    {
+      "parameters": {
+        "chatId": "889717933",
+        "text": "={{ $json.mensagem }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        0
+      ],
+      "id": "2c99cda1-317a-4e13-b9eb-fb70fe206b1f",
+      "name": "send message",
+      "webhookId": "c75eb710-fe1d-4737-b66c-fc7727144c05",
+      "credentials": {
+        "telegramApi": {
+          "id": "1ON6EfgJqTR9tyCc",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "get cycle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get cycle": {
+      "main": [
+        [
+          {
+            "node": "get finances by month",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get finances by month": {
+      "main": [
+        [
+          {
+            "node": "get resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get resume": {
+      "main": [
+        [
+          {
+            "node": "transform data for output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "transform data for output": {
+      "main": [
+        [
+          {
+            "node": "send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b22db14b-5a30-404c-b504-33da44c4708f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ae3c1e110643c11b2d0f251462a8b651e6e2cccd46bfb4c4c16e1f92e8e38ed4"
+  },
+  "nodeGroups": [],
+  "id": "U2kktWiwNJThFX7x",
+  "tags": []
+}
