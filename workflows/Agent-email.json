@@ -154,11 +154,13 @@
   "meta": {
     "templateCredsSetupCompleted": true
   },
+  "nodeGroups": [],
   "pinData": {},
   "versionId": "28b5e5a5-1cfd-4f30-b66e-562aa1df77dd",
   "activeVersionId": null,
   "versionCounter": 4,
   "triggerCount": 0,
+  "sourceWorkflowId": null,
   "tags": [],
   "shared": [
     {
@@ -174,8 +176,14 @@
         "name": "kenji maeda <kenjimaedafamily@gmail.com>",
         "type": "personal",
         "icon": null,
-        "description": null
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "030dd5bf-9c48-4b90-8af9-957c3e0050d4"
       }
     }
-  ]
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
 }

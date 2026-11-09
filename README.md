@@ -130,6 +130,7 @@ A planilha de controle financeiro (`controle_financeiro`) deve seguir a estrutur
 | `Google-Sheets-Customer-Sub-Workflow-Telegram-Multi-Task.json` | Consulta de clientes em planilhas via Telegram | 8 |
 | `Telegram-Search-Web.json` | Busca na web diretamente pelo Telegram | 6 |
 | `Telegram-Sub-WorkFlow-Search-Internet.json` | Sub-workflow de pesquisa na internet | 6 |
+| `Sub-Workflow-X-Posts-Twitter.json` | Sub-workflow que gera posts para X (Twitter): recebe o tema, um agente de IA (OpenAI) escreve o post e tenta salvar/enviar, com nova tentativa automática em caso de erro | 6 |
 
 ### RAG & Knowledge Base
 
@@ -181,19 +182,62 @@ A planilha de controle financeiro (`controle_financeiro`) deve seguir a estrutur
 | `Simple-webhook.json` | Webhook simples de exemplo | 3 |
 | `first_automation.json` | Primeira automação (exemplo inicial) | 2 |
 | `hotel_second_automation.json` | Automação para reservas de hotel | 0 |
+| `My-workflow.json` | Exemplo de automação agendada: dispara em intervalos regulares e lê/escreve arquivos no disco | 2 |
 
 ---
 
 ## Como Usar
 
-### 1. Importar um Workflow
+### Instalação Global (recomendado)
+
+Para rodar o n8n localmente e ter acesso aos 30 workflows desta coleção, instale o n8n globalmente:
+
+```bash
+npm install -g n8n
+```
+
+Após a instalação, todos os workflows ficam disponíveis na interface do n8n.
+
+### 1. Iniciar o n8n
+
+```bash
+n8n start
+```
+
+O painel abre em `http://localhost:5678`.
+
+> **Importante:** o n8n **não lê os arquivos `.json` desta pasta automaticamente** ao iniciar. Ele mostra apenas os workflows que já estão no banco de dados dele (`~/.n8n/database.sqlite`). Por isso, se você iniciar o n8n pela primeira vez sem importar, verá apenas alguns (ou nenhum) workflow.
+
+### 2. Importar todos os workflows
+
+Para que os workflows apareçam no painel, importe a pasta `workflows/` para o banco de dados do n8n:
+
+```bash
+n8n import:workflow --separate --input=./workflows
+```
+
+- `--separate` importa cada arquivo `.json` como um workflow distinto
+- Após a importação, inicie o `n8n start` novamente — todos os workflows aparecem no painel
+
+### 3. Exportar do banco para a pasta
+
+Se você criou workflows na interface do n8n e quer salvá-los nesta pasta (para versionar no git), o caminho inverso também funciona:
+
+```bash
+n8n export:workflow --backup --output=./workflows
+```
+
+- `--backup` gera um arquivo `.json` por workflow (formato ideal para repositório)
+- Sem `--backup`, ele gera um único `.json` com tudo dentro — não use para esta pasta
+
+### 4. Importar um Workflow manualmente
 
 1. Acesse o painel do n8n
 2. Vá em **Workflows** → **Add Workflow** → **Import from File**
 3. Selecione o arquivo `.json` desejado da pasta `workflows/`
 4. Configure as credenciais necessárias (API keys, tokens, etc.)
 
-### 2. Credenciais Necessárias
+### 5. Credenciais Necessárias
 
 | Workflow | Credenciais |
 |----------|-------------|

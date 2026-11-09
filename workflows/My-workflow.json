@@ -1,0 +1,95 @@
+{
+  "updatedAt": "2026-11-09T15:14:58.586Z",
+  "createdAt": "2026-11-09T15:14:44.108Z",
+  "id": "toohq9Wtgb1nalLP",
+  "name": "My workflow",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "b7b67cbc-3adf-4375-a0ea-5ed7337981a4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "e7da5cce-6fe4-4734-8b12-a754a9d2238c",
+      "name": "Read/Write Files from Disk"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "3dd278aa-4179-423e-8660-fb8ba899e286",
+  "activeVersionId": null,
+  "versionCounter": 4,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-11-09T15:14:44.112Z",
+      "createdAt": "2026-11-09T15:14:44.112Z",
+      "role": "workflow:owner",
+      "workflowId": "toohq9Wtgb1nalLP",
+      "projectId": "JQyTTjJMNM8n2QpU",
+      "project": {
+        "updatedAt": "2025-05-28T10:59:42.882Z",
+        "createdAt": "2025-05-28T10:53:01.795Z",
+        "id": "JQyTTjJMNM8n2QpU",
+        "name": "kenji maeda <kenjimaedafamily@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "030dd5bf-9c48-4b90-8af9-957c3e0050d4"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}
