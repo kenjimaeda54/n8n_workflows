@@ -17,6 +17,7 @@ Coleção de workflows prontos para uso no [n8n](https://n8n.io) — automaçõe
   - [Email Automation](#email-automation)
   - [MCP Integrations](#mcp-integrations)
   - [Google Sheets](#google-sheets)
+  - [RH & Recrutamento](#rh--recrutamento)
   - [Utilitários](#utilitários)
 - [Como Usar](#como-usar)
 - [Pré-requisitos](#pré-requisitos)
@@ -28,7 +29,7 @@ Coleção de workflows prontos para uso no [n8n](https://n8n.io) — automaçõe
 
 ## Visão Geral
 
-Este repositório reúne **27 workflows** criados para o n8n, cobrindo desde automações simples (webhooks, e-mail) até sistemas complexos com **agentes de IA**, **RAG (Retrieval-Augmented Generation)** e **MCP (Model Context Protocol)**.
+Este repositório reúne **28 workflows** criados para o n8n, cobrindo desde automações simples (webhooks, e-mail) até sistemas complexos com **agentes de IA**, **RAG (Retrieval-Augmented Generation)** e **MCP (Model Context Protocol)**.
 
 ### Principais Recursos
 
@@ -40,6 +41,7 @@ Este repositório reúne **27 workflows** criados para o n8n, cobrindo desde aut
 | **MCP** | Integração com Model Context Protocol (local e Claude Desktop) |
 | **Google Sheets** | Leitura e escrita de dados em planilhas |
 | **Controle Financeiro** | Gestão de cartão de crédito via Telegram + Google Sheets (texto e áudio) |
+| **RH & Recrutamento** | Análise automática de currículos com IA, scoring e integração via API |
 | **Email** | Envio/recebimento de e-mails com agente inteligente |
 
 ---
@@ -164,6 +166,12 @@ A planilha de controle financeiro (`controle_financeiro`) deve seguir a estrutur
 | `Finances Credit  WorkFlow.json` | Consulta/edição de dados financeiros em planilha | 12 |
 | `Schedule finances.json` | Leitura de planilha para notificação automática | 5 |
 
+### RH & Recrutamento
+
+| Workflow | Descrição | Nós |
+|----------|-----------|:---:|
+| `analyze_resume.json` | Triagem automática de currículos: recebe uma candidatura via webhook (com autenticação JWT), baixa o PDF do currículo, extrai o texto e um agente de IA avalia a compatibilidade com as palavras-chave da vaga gerando um score (0–1). O resultado é gravado no Airtable, enviado por e-mail (Gmail) e retornado à API via callback HTTP. | 14 |
+
 ### Utilitários
 
 | Workflow | Descrição | Nós |
@@ -196,6 +204,7 @@ A planilha de controle financeiro (`controle_financeiro`) deve seguir a estrutur
 | Pinnecode | API Key do Pinnecode |
 | WhatsApp | Configuração do canal WhatsApp |
 | Controle Financeiro | Telegram Bot Token + Google Sheets OAuth2 + OpenAI API Key + OpenRouter Bearer Auth (para transcrição de áudio) |
+| Análise de Currículos | JWT Auth (webhook) + OpenRouter API + Gmail OAuth2 + Airtable Token + HTTP Bearer Auth (callback da API) |
 
 ### 3. Variáveis de Ambiente (n8n)
 

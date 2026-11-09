@@ -1,0 +1,541 @@
+{
+  "name": "analyze_resume",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "application_received",
+        "authentication": "jwtAuth",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -864,
+        0
+      ],
+      "id": "028f8ff9-dac2-423e-96c0-b365e9a0c997",
+      "name": "Webhook --> Resume Url",
+      "webhookId": "9c45dfbd-ed34-449c-82b1-e1fd3b9083b2",
+      "credentials": {
+        "jwtAuth": {
+          "id": "Ro4vxyEF5l9sbchy",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.url_public_resume }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -640,
+        0
+      ],
+      "id": "48644717-66fa-41be-97fc-d052cf403a48",
+      "name": "Download Resume"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -432,
+        0
+      ],
+      "id": "8054bf1e-50e8-4793-8173-3839e7cf1311",
+      "name": "Extract resume"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a06f56df-d834-4e25-97d9-56dadb6a26bf",
+              "name": "resume",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "c33117d9-30c1-4f7d-ae86-c0806804c92c",
+              "name": "words_key",
+              "value": "={{ $('Webhook --> Resume Url').item.json.body.list_word_keys }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "b9477388-7eef-446a-9144-63855d1637e1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $workflow.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -128,
+        224
+      ],
+      "id": "579a2d0e-7b0d-45a0-9bcc-8ab2d8f4a4f7",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "kenjimaedafamily@gmail.com",
+        "subject": "Avaliação currículo",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        224
+      ],
+      "id": "8dee5522-515e-4f16-a1e1-a11583dc665a",
+      "name": "Send email",
+      "webhookId": "c08a2d33-415d-48de-b811-e923ec8f4571",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SAi4Rqcfkh0lkP4Q",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appNTlr94FclsrbNt",
+          "mode": "list",
+          "cachedResultName": "Empresa X",
+          "cachedResultUrl": "https://airtable.com/appNTlr94FclsrbNt"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblDm4ox3RQX4NUpQ",
+          "mode": "list",
+          "cachedResultName": "Resume",
+          "cachedResultUrl": "https://airtable.com/appNTlr94FclsrbNt/tblDm4ox3RQX4NUpQ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('id__using_to_match_', ``, 'string') }}",
+            "Score": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Score', ``, 'number') }}",
+            "Title Vacancy": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Title_Vacancy', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Title Vacancy",
+              "displayName": "Title Vacancy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        224
+      ],
+      "id": "7cbd5d80-a8c3-489f-a75f-b0d9ce3ab798",
+      "name": "Database audit",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "flFsBZzT1VWckGjh",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ \n String(JSON.stringify(\n   { \n   \"resume\": $json.resume ,\n   \"keywords\":  $json.words_key,\n  \"job_title\":  $('Webhook --> Resume Url').item.json.body.vacancy_title,\n  \"name_candidate\":  $('Webhook --> Resume Url').item.json.body.candidate_name,\n  \"candidate_email\":  $('Webhook --> Resume Url').item.json.body.candidate_email,\n  \"application_id\":  $('Webhook --> Resume Url').item.json.body.application_public_id\n  }\n ))\n}}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a technical recruitment specialist responsible for evaluating the compatibility between a candidate's resume and a set of job requirements.\n\nCurrent date: {{ $now }}\n\n## 1. Input\n\nYou will receive a JSON object containing the following fields:\n\n- `resume`: The full text of the candidate's resume.\n- `keywords`: A list of keywords and technologies to be evaluated.\n- `job_title`: The job title being evaluated.\n- `name_candidate`: The candidate's full name.\n- `candidate_email`: The candidate's email address.\n- `application_id`: The UUID of the application to be updated through the API.\n\nUse these fields as the primary source for your assessment. Do not assume information that is not present in the resume.\n\n## 2. Semantic Analysis\n\nAnalyze the content of `resume` and evaluate each item in `keywords` individually.\n\nFor each keyword:\n\n1. Check whether it explicitly appears in the resume.\n2. Consider the context in which it is mentioned, including professional experience, projects, and technical skills.\n3. Recognize synonyms and technically equivalent descriptions when sufficient evidence supports the equivalence.\n4. Distinguish demonstrated practical experience from a keyword merely mentioned in a list of technologies.\n5. Do not consider a skill proven simply because the candidate is familiar with related technologies.\n6. Do not invent experience, knowledge, or evidence that is absent from the resume.\n\n## 3. Requirement Scoring\n\nAssign a score to each keyword:\n\n- `1.0`: The skill is clearly demonstrated by concrete evidence in the resume.\n- `0.5`: The skill is partially demonstrated, with limited or indirect evidence.\n- `0.0`: The skill is not identified or lacks sufficient supporting evidence.\n\nThe absence of an exact keyword match must not automatically result in a score of zero when valid semantic evidence exists.\n\nFor each keyword, also write ONE short evidence sentence (max 25 words) citing where the skill appears in the resume. If there is none, write \"No evidence found in the resume.\"\n\n## 4. Final Score\n\nCalculate the final score as the arithmetic mean of the individual keyword scores.\n\nFormula:\n\n`score = sum of individual scores / number of keywords`\n\nThe result must be a number between `0` and `1`:\n\n- `1.0`: 100% compatibility with the evaluated requirements.\n- `0.5`: 50% compatibility.\n- `0.0`: No demonstrated skills among the evaluated requirements.\n\nIf `keywords` is empty, return `score: 0`.\n\nThe score represents compatibility with the supplied keywords, not a complete assessment of the candidate's professional quality.\n\n## 5. Mandatory Tool Usage\n\nYou have access to three tools:\n\n- Airtable: stores candidate evaluation records.\n- Email: sends an email notification.\n- Send score on API: updates the application score through the API using `application_id` and the calculated score.\n\nYou MUST follow the workflow below after calculating the final score.\n\n### Step 1: Save Every Evaluation to Airtable\n\nAlways use the Airtable tool, regardless of the final score, with:\n\n- `Email`: the value of `candidate_email`.\n- `Score`: the final numerical score between `0` and `1`.\n- `Title Vacancy`: the value of `job_title`.\n\nRules:\n\n1. Save every evaluation, including scores below `0.7`.\n2. Use the actual values from the input and the calculated score.\n3. Do not skip the Airtable operation because the candidate was not approved.\n4. Do not fabricate missing field values.\n5. Do not claim the record was saved unless the Airtable tool confirms success.\n\n### Step 2: Send an Email When the Score Is at Least 0.7\n\nIf and only if `score >= 0.7`, use the Email tool to send an email containing the following message:\n\n`Candidato <name_candidate>, aprovado na vaga <job_title>. Com email <candidate_email>`\n\nReplace the placeholders with the actual values from the input.\n\nExample:\n\n`Candidato João Silva, aprovado na vaga Desenvolvedor Android Sênior. Com email joao@example.com`\n\nRules:\n\n1. Send the email only when the final score is greater than or equal to `0.7`.\n2. Do not send an approval email when the score is below `0.7`.\n3. Use the exact candidate name, job title, and email provided in the input.\n4. Do not change the approval threshold.\n5. Do not send duplicate notifications for the same evaluation.\n6. Do not claim the email was sent unless the Email tool confirms success.\n\n\n### Step 4: Execution Order\n\nExecute the workflow in this order:\n\n1. Analyze the resume and evaluate every keyword.\n2. Calculate the final score.\n3. Save the evaluation to Airtable.\n4. If score >= 0.7, send the approval email.\n\nIf Airtable fails, report the failure accurately and continue with the remaining operations.\nIf the email operation fails, report the failure accurately and continue with the API operation.\nIf the API operation fails, report the failure accurately.\nNever change the calculated score because a tool operation failed.\n\n## 6. Final Rules\n\n- Evaluate every keyword received in `keywords`. Do not omit any.\n- Preserve each original keyword in the `keyword` field.\n- Base explanations exclusively on the content of `resume`.\n- Do not confuse a lack of evidence with proof that the candidate lacks the skill.\n- Do not adjust the final score to favor or penalize the candidate.\n- Never modify the score to trigger or prevent an email.\n- Always attempt to save every evaluation to Airtable.\n- Always attempt to send the score to the API.\n- Send an approval email only when the score is at least `0.7`.\n- Call each tool at most once.\n- Use the tools to perform the required actions; describing an action is not a substitute for executing it.\n\n## 7. Structured Output\n\nCRITICAL: After executing all tools, your FINAL response MUST be strictly a JSON object with NO markdown formatting, NO markdown tables, NO extra explanations, and NO code fences.\n\nReturn ONLY this JSON format, keeping the fields in this exact order:\n\n{\n  \"application_id\": \"<exactly as received>\",\n  \"score\": 0.57\n}\n\nRules:\n- Always include application_id exactly as received. Never invent or modify it.\n- The score field must be the final calculated score as a number between 0 and 1. Do not convert it to a percentage.\n- Include every evaluated keyword in keyword_evaluations, preserving the original keyword values.\n- Do not output tables, tool status reports, or any text outside the JSON object."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "a86b0f63-f139-45e6-a339-9c7dd37c062a",
+      "name": "Agent"
+    },
+    {
+      "parameters": {
+        "model": "xiaomi/mimo-v2.6-pro",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        224
+      ],
+      "id": "984fb2b7-fcba-4cbb-960f-4bd15e00a3a2",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "olWaG1GcZkeZkqBB",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "xiaomi/mimo-v2.6-pro",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        368,
+        464
+      ],
+      "id": "87a22369-565a-4b29-a833-f971ec233822",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "olWaG1GcZkeZkqBB",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "\n{\n  \"application_id\": \"<exactly as received>\",\n  \"score\": 0.57\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        224
+      ],
+      "id": "cdba2443-d862-41d4-afc5-4add34c24a36",
+      "name": "Format data"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://affected-council-astronomy-cir.trycloudflare.com/application/{{ $json.output.application_id }}/score",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "score",
+              "value": "={{ $json.output.score }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        304,
+        0
+      ],
+      "id": "5e72290c-84e5-4bfd-85c1-c01f884e943a",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "5tPrHRZ2cMn8x5ej",
+          "name": "N8N Callback FastApi"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "No user message do agente,\nse for enviar um objeto ou array transforme usando Stringfy\nRetorno não pode ser um [object,object]",
+        "width": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "b14a1295-11fe-45d1-a06d-61dbe10ad7b2",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {
+    "Webhook --> Resume Url": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.kenji.api.br",
+            "user-agent": "python-httpx/0.28.1",
+            "content-length": "723",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbmFseXplcy1yZXN1bWUtYXBpIiwiaWF0IjoxNzkzMjcxNjY5LCJleHAiOjE3OTMyNzE3Mjl9.q-2U-emvRoDt5DOIuIAFvGSPbJlGLAxoPxrRXCGe_98",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "2804:d45:889e:ef00:b8bf:b92d:66c4:12ec",
+            "cf-ipcountry": "BR",
+            "cf-ray": "a521ae3fcc26d95d-GIG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-warp-tag-id": "1122cfe9-7d31-4799-9a36-13520ad09a6b",
+            "connection": "keep-alive",
+            "content-type": "application/json",
+            "x-forwarded-for": "2804:d45:889e:ef00:b8bf:b92d:66c4:12ec",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "application_public_id": "e2a0dcef-4740-485a-9c52-52daf61310ab",
+            "candidate_email": "kenjimaedafamily+27@gmail.com",
+            "candidate_name": "kenji",
+            "vacancy_title": "Frontend Developer",
+            "url_public_resume": "https://8a02fe6019e10d28dcff609644c01d30.r2.cloudflarestorage.com/resume/resumes/28719799012_79e79bcc-57bc-4d1a-87da-c1229cdef5d6_8da27376564a4a4482197a9bafb08b09.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0f6ee726ddbb735ecc5b195718da0781%2F20261029%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261029T110109Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=c726cea9805d3d1f38220dc4e942554093411e098d53c47191ac6d9ba99abab2",
+            "list_word_keys": [
+              "react",
+              "typescript",
+              "hooks",
+              "navigation",
+              "auth",
+              "mvvm",
+              "cokkie"
+            ]
+          },
+          "webhookUrl": "https://n8n.kenji.api.br/webhook/application_received",
+          "executionMode": "production",
+          "jwtPayload": {
+            "sub": "analyzes-resume-api",
+            "iat": 1793271669,
+            "exp": 1793271729
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook --> Resume Url": {
+      "main": [
+        [
+          {
+            "node": "Download Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Resume": {
+      "main": [
+        [
+          {
+            "node": "Extract resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract resume": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Database audit": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Format data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format data": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3e1292c9-d2fb-4c01-b923-2e9500ebec8f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ae3c1e110643c11b2d0f251462a8b651e6e2cccd46bfb4c4c16e1f92e8e38ed4"
+  },
+  "nodeGroups": [],
+  "id": "3lvLOMhErs8lLcR2",
+  "tags": []
+}
