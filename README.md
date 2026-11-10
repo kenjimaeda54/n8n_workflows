@@ -29,7 +29,7 @@ Coleção de workflows prontos para uso no [n8n](https://n8n.io) — automaçõe
 
 ## Visão Geral
 
-Este repositório reúne **28 workflows** criados para o n8n, cobrindo desde automações simples (webhooks, e-mail) até sistemas complexos com **agentes de IA**, **RAG (Retrieval-Augmented Generation)** e **MCP (Model Context Protocol)**.
+Este repositório reúne **30 workflows** criados para o n8n, cobrindo desde automações simples (webhooks, e-mail) até sistemas complexos com **agentes de IA**, **RAG (Retrieval-Augmented Generation)** e **MCP (Model Context Protocol)**.
 
 ### Principais Recursos
 
@@ -196,7 +196,7 @@ Para rodar o n8n localmente e ter acesso aos 30 workflows desta coleção, insta
 npm install -g n8n
 ```
 
-Após a instalação, todos os workflows ficam disponíveis na interface do n8n.
+> **Importante:** o n8n **não lê os arquivos `.json` desta pasta automaticamente**. Para que os workflows apareçam no painel, você precisa importá-los para o banco de dados do n8n (passo 2 abaixo) — e o comando de importação deve ser rodado **na pasta do projeto** (a raiz do repositório), porque o `--input=./workflows` é um caminho relativo.
 
 ### 1. Iniciar o n8n
 
@@ -206,11 +206,11 @@ n8n start
 
 O painel abre em `http://localhost:5678`.
 
-> **Importante:** o n8n **não lê os arquivos `.json` desta pasta automaticamente** ao iniciar. Ele mostra apenas os workflows que já estão no banco de dados dele (`~/.n8n/database.sqlite`). Por isso, se você iniciar o n8n pela primeira vez sem importar, verá apenas alguns (ou nenhum) workflow.
+> **Nota:** se você iniciar o n8n pela primeira vez sem importar, verá apenas alguns (ou nenhum) workflow — o painel mostra apenas o que já está no banco de dados dele (`~/.n8n/database.sqlite`). Isso é resolvido pelo próximo passo.
 
 ### 2. Importar todos os workflows
 
-Para que os workflows apareçam no painel, importe a pasta `workflows/` para o banco de dados do n8n:
+**Na pasta do projeto** (a raiz do repositório), importe a pasta `workflows/` para o banco de dados do n8n:
 
 ```bash
 n8n import:workflow --separate --input=./workflows
@@ -250,7 +250,7 @@ n8n export:workflow --backup --output=./workflows
 | Controle Financeiro | Telegram Bot Token + Google Sheets OAuth2 + OpenAI API Key + OpenRouter Bearer Auth (para transcrição de áudio) |
 | Análise de Currículos | JWT Auth (webhook) + OpenRouter API + Gmail OAuth2 + Airtable Token + HTTP Bearer Auth (callback da API) |
 
-### 3. Variáveis de Ambiente (n8n)
+### 6. Variáveis de Ambiente (n8n)
 
 ```env
 N8N_ENCRYPTION_KEY=sua_chave_de_criptografia
