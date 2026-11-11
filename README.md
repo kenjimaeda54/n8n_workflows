@@ -29,7 +29,7 @@ Coleção de workflows prontos para uso no [n8n](https://n8n.io) — automaçõe
 
 ## Visão Geral
 
-Este repositório reúne **30 workflows** criados para o n8n, cobrindo desde automações simples (webhooks, e-mail) até sistemas complexos com **agentes de IA**, **RAG (Retrieval-Augmented Generation)** e **MCP (Model Context Protocol)**.
+Este repositório reúne **32 workflows** criados para o n8n, cobrindo desde automações simples (webhooks, e-mail) até sistemas complexos com **agentes de IA**, **RAG (Retrieval-Augmented Generation)** e **MCP (Model Context Protocol)**.
 
 ### Principais Recursos
 
@@ -42,6 +42,7 @@ Este repositório reúne **30 workflows** criados para o n8n, cobrindo desde aut
 | **Google Sheets** | Leitura e escrita de dados em planilhas |
 | **Controle Financeiro** | Gestão de cartão de crédito via Telegram + Google Sheets (texto e áudio) |
 | **RH & Recrutamento** | Análise automática de currículos com IA, scoring e integração via API |
+| **Seguros (RAG local)** | Ingestão e consulta de documentos de seguros em base vetorial local (ChromaDB + Ollama) |
 | **Email** | Envio/recebimento de e-mails com agente inteligente |
 
 ---
@@ -140,6 +141,8 @@ A planilha de controle financeiro (`controle_financeiro`) deve seguir a estrutur
 | `RAG-App-with-ChatBoot-Q&A---Gold-Smith.json` | Aplicação RAG Q&A — Gold Smith | 9 |
 | `RAG-with-database-vector.json` | RAG com banco de dados vetorial | 6 |
 | `RAG-App-save-Q&A---Gold-Smith.json` | Salvamento de Q&A em base vetorial — Gold Smith | 6 |
+| `Ingestion Insurances File Sub Workflow.json` | Ingestão de documentos de seguros em base vetorial (ChromaDB): a cada 10 horas lê os arquivos da pasta local, extrai o texto, divide em chunks e gera embeddings locais com Ollama. Sub-workflow de ingestão. | 14 |
+| `Retrieve Insurance Local.json` | Chatbot de consulta aos documentos de seguros: agente de IA (Ollama) com memória e ferramenta de busca na base vetorial ChromaDB (`retrieve_documents`), acessado via chat. | 9 |
 
 ### Email Automation
 
@@ -190,7 +193,7 @@ A planilha de controle financeiro (`controle_financeiro`) deve seguir a estrutur
 
 ### Instalação Global (recomendado)
 
-Para rodar o n8n localmente e ter acesso aos 30 workflows desta coleção, instale o n8n globalmente:
+Para rodar o n8n localmente e ter acesso aos 32 workflows desta coleção, instale o n8n globalmente:
 
 ```bash
 npm install -g n8n
